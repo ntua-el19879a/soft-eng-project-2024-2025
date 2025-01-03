@@ -3,6 +3,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer');
+const fs = require('fs');
+const csv = require('csv-parser');
+
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 const PORT = 9115;
@@ -50,6 +55,31 @@ const Operator = mongoose.model(
   })
 );
 
+const Station = mongoose.model(
+  'Station',
+  new mongoose.Schema(
+    {
+      OpID: String,
+      Operator: String,
+      TollID: String,
+      Name: String,
+      PM: String,
+      Locality: String,
+      Road: String,
+      Lat: Number,
+      Long: Number,
+      Email: String,
+      Prices: {
+        Price1: Number,
+        Price2: Number,
+        Price3: Number,
+        Price4: Number,
+      },
+    },
+    { collection: 'stations' }
+  )
+);
+
 // Healthcheck Endpoint
 app.get('/api/admin/healthcheck', async (req, res) => {
   try {
@@ -82,15 +112,55 @@ app.get('/api/admin/healthcheck', async (req, res) => {
 });
 
 // Reset Stations Endpoint
-app.post('/api/admin/resetstations', async (req, res) => {
+app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => {
+  const filePath = req.file?.path;
+
+  if (!filePath) {
+    return res.status(400).json({ status: 'failed', info: 'CSV file not provided.' });
+  }
+
   try {
-    await TollStationPass.deleteMany({});
-    res.status(200).json({ status: 'OK' });
+    const stations = [];
+
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (row) => {
+        stations.push({
+          OpID: row['OpID'],
+          Operator: row['Operator'],
+          TollID: row['TollID'],
+          Name: row['Name'],
+          PM: row['PM'],
+          Locality: row['Locality'],
+          Road: row['Road'],
+          Lat: parseFloat(row['Lat']),
+          Long: parseFloat(row['Long']),
+          Email: row['Email'],
+          Prices: {
+            Price1: parseFloat(row['Price1']),
+            Price2: parseFloat(row['Price2']),
+            Price3: parseFloat(row['Price3']),
+            Price4: parseFloat(row['Price4']),
+          },
+        });
+      })
+      .on('end', async () => {
+        try {
+          await Station.deleteMany({});
+          await Station.insertMany(stations);
+          res.status(200).json({ status: 'OK' });
+        } catch (err) {
+          console.error('Error saving stations:', err);
+          res.status(500).json({ status: 'failed', info: err.message });
+        } finally {
+          fs.unlinkSync(filePath);
+        }
+      });
   } catch (err) {
+    console.error('Error reading CSV file:', err);
     res.status(500).json({ status: 'failed', info: err.message });
   }
 });
-
 // Reset Passes Endpoint
 app.post('/api/admin/resetpasses', async (req, res) => {
   try {

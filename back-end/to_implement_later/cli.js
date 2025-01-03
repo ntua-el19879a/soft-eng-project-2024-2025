@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const { Command } = require('commander');
 const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
 
 const program = new Command();
 
@@ -8,7 +10,7 @@ const program = new Command();
 const BASE_URL = 'http://localhost:9115/api';
 
 // Helper function to handle API requests (updated for POST requests)
-async function makeRequest(method, endpoint, params = {}, data = {}) {
+async function makeRequest(method, endpoint, params = {}, data = {}, filePath = null) {
   try {
     const config = {
       method,
@@ -16,6 +18,14 @@ async function makeRequest(method, endpoint, params = {}, data = {}) {
       params: params,
       data: data,
     };
+    if (filePath) {
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(filePath));
+      config.headers = formData.getHeaders();
+      config.data = formData;
+    } else if (data) {
+      config.data = data;
+    }
     const response = await axios(config);
     console.log(JSON.stringify(response.data, null, 2)); // Pretty print JSON
   } catch (error) {
@@ -37,10 +47,10 @@ program
 
 // Reset stations command
 program
-  .command('resetstations')
+  .command('resetstations <filePath>')
   .description('Reset the toll stations data')
-  .action(async () => {
-    await makeRequest('post', 'admin/resetstations');
+  .action(async (filePath) => {
+    await makeRequest('post', 'admin/resetstations', {}, {}, filePath);
   });
 
 // Reset passes command
