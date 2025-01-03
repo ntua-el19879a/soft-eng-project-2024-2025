@@ -37,7 +37,7 @@ const TollStationPass = mongoose.model(
       },
     ],
   },
-  { collection : 'tollStationPasses' }
+    { collection: 'tollStationPasses' }
   )
 );
 
