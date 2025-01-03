@@ -63,13 +63,13 @@ program
 
 // Get toll station passes command
 program
-  .command('getTollStationPasses <stationID> <date_from> <date_to>')
+  .command('getpasses <tollID> <date_from> <date_to>')
   .description('Get passes for a specific toll station')
   .option('--format <format>', 'Output format (json or csv)', 'json')
-  .action((stationID, date_from, date_to, options) => {
+  .action((tollID, date_from, date_to, options) => {
     makeRequest(
       'get',
-      `tollStationPasses/${stationID}/${date_from}/${date_to}`,
+      `passes/${tollID}/${date_from}/${date_to}`,
       { format: options.format }
     );
   });

@@ -23,6 +23,45 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+const Pass = mongoose.model(
+  'Pass',
+  new mongoose.Schema(
+    {
+      timestamp: Date,
+      tollID: String,
+      tagRef: String,
+      tagHomeID: String,
+      charge: Number,
+    },
+    { collection: 'passes' }
+  )
+);
+
+const TollStation = mongoose.model(
+  'TollStation',
+  new mongoose.Schema(
+    {
+      OpID: String,
+      Operator: String,
+      TollID: String,
+      Name: String,
+      PM: String,
+      Locality: String,
+      Road: String,
+      Lat: Number,
+      Long: Number,
+      Email: String,
+      Prices: {
+        Price1: Number,
+        Price2: Number,
+        Price3: Number,
+        Price4: Number,
+      },
+    },
+    { collection: 'toll_stations' }
+  )
+);
+
 // MongoDB Models
 const TollStationPass = mongoose.model(
   'TollStationPass',
@@ -55,48 +94,16 @@ const Operator = mongoose.model(
   })
 );
 
-const Station = mongoose.model(
-  'Station',
-  new mongoose.Schema(
-    {
-      OpID: String,
-      Operator: String,
-      TollID: String,
-      Name: String,
-      PM: String,
-      Locality: String,
-      Road: String,
-      Lat: Number,
-      Long: Number,
-      Email: String,
-      Prices: {
-        Price1: Number,
-        Price2: Number,
-        Price3: Number,
-        Price4: Number,
-      },
-    },
-    { collection: 'stations' }
-  )
-);
-
 // Healthcheck Endpoint
 app.get('/api/admin/healthcheck', async (req, res) => {
   try {
     // Count total stations
-    const nStations = await TollStationPass.countDocuments();
+    const nStations = await TollStation.countDocuments();
 
     // Count total tags (from the Operator model)
     const nTags = await Operator.countDocuments();
 
-    // Sum all nPasses values directly
-    const totalPasses = await TollStationPass.aggregate([
-      { $group: { _id: null, total: { $sum: '$nPasses' } } }
-    ]);
-
-    console.log('Aggregation Result:', totalPasses);
-
-    const nPasses = totalPasses.length > 0 ? totalPasses[0].total : 0;
+    const nPasses = await Pass.countDocuments();
 
     res.status(200).json({
       status: 'OK',
@@ -120,12 +127,12 @@ app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => 
   }
 
   try {
-    const stations = [];
+    const tollStations = [];
 
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (row) => {
-        stations.push({
+        tollStations.push({
           OpID: row['OpID'],
           Operator: row['Operator'],
           TollID: row['TollID'],
@@ -146,8 +153,8 @@ app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => 
       })
       .on('end', async () => {
         try {
-          await Station.deleteMany({});
-          await Station.insertMany(stations);
+          await TollStation.deleteMany({});
+          await TollStation.insertMany(tollStations);
           res.status(200).json({ status: 'OK' });
         } catch (err) {
           console.error('Error saving stations:', err);
@@ -164,7 +171,7 @@ app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => 
 // Reset Passes Endpoint
 app.post('/api/admin/resetpasses', async (req, res) => {
   try {
-    await TollStationPass.deleteMany({});
+    await Pass.deleteMany({});
     res.status(200).json({ status: 'OK' });
   } catch (err) {
     res.status(500).json({ status: 'failed', info: err.message });
@@ -172,19 +179,18 @@ app.post('/api/admin/resetpasses', async (req, res) => {
 });
 
 // Get Toll Station Passes Endpoint
-app.get('/api/tollStationPasses/:tollStationID/:date_from/:date_to', async (req, res) => {
-  const { tollStationID, date_from, date_to } = req.params;
+app.get('/api/passes/:tollID/:date_from/:date_to', async (req, res) => {
+  const { tollID, date_from, date_to } = req.params;
   const format = req.query.format || 'json';
 
   try {
-    const passes = await TollStationPass.find({
-      stationID: tollStationID,
-      'passList.timestamp': { $gte: new Date(date_from), $lte: new Date(date_to) },
-    }).sort({ 'passList.timestamp': 1 });
+    const passes = await Pass.find({
+      tollID,
+      timestamp: { $gte: new Date(date_from), $lte: new Date(date_to) },
+    }).sort({ timestamp: 1 });
 
     if (format === 'csv') {
       const csv = passes
-        .flatMap((doc) => doc.passList)
         .map((pass) => Object.values(pass).join(','))
         .join('\n');
       res.setHeader('Content-Type', 'text/csv');
