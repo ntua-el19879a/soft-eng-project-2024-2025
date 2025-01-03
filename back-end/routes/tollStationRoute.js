@@ -1,4 +1,7 @@
 // Route (routes/tollStationRoutes.js)
+// Purpose: Defines the available endpoints and their HTTP methods,
+// linking each endpoint to the corresponding controller.
+
 const express = require('express');
 const { getTollStationPasses } = require('../controllers/tollStationController');
 
