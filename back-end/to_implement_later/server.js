@@ -17,9 +17,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Connection
-const mongoURI = 'mongodb://localhost:27017/toll-interop-db';
+const mongoURI = 'mongodb://127.0.0.1:27017/toll-interop-db';
 mongoose
-  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(mongoURI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 

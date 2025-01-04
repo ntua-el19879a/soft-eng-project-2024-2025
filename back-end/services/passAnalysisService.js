@@ -4,8 +4,9 @@ const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = "operators_v2";
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { parse } = require('json2csv');
 
-exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo) => {
+exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, format) => {
     let client;
     try {
 
@@ -50,9 +51,12 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo) => 
             .sort({ timestamp: 1 }) // Sort by timestamp ascending
             .toArray();
 
+        // No Content
+        if (passData.length === 0) {
+            return null;
+        }
 
-        // Construct the response
-        return {
+        const result = {
             stationOpID: stationOpID,
             tagOpID: tagOpID,
             requestTimestamp: currentTimestamp(),
@@ -68,6 +72,22 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo) => 
                 passCharge: pass.charge,
             }))
         };
+
+        if (format === 'csv') {
+            const csvFields = ['stationOpID', 'tagOpID', 'requestTimestamp', 'periodFrom', 'periodTo', 'nPasses', ...['passIndex', 'passID', 'stationID', 'timestamp', 'tagID', 'passCharge']];
+            const csvData = result.passList.map(item => ({
+                stationOpID: result.stationOpID,
+                tagOpID: result.tagOpID,
+                requestTimestamp: result.requestTimestamp,
+                periodFrom: result.periodFrom,
+                periodTo: result.periodTo,
+                nPasses: result.nPasses,
+                ...item
+            }));
+            return parse(csvData, { fields: csvFields }); // Convert JSON to CSV
+        }
+        return result;
+
     } catch (error) {
         if (error.status === 400) {
             throw error;

@@ -4,9 +4,11 @@ const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = 'operators_v2';
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { parse } = require('json2csv');
 
 
-exports.getChargesByData = async (tollOpID, dateFrom, dateTo) => {
+
+exports.getChargesByData = async (tollOpID, dateFrom, dateTo, format) => {
     let client;
 
     try {
@@ -51,8 +53,13 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo) => {
             ])
             .toArray();
 
-        // Construct response
-        return {
+        if (passData.length === 0) {
+            return null;
+        }
+
+        // TODO: Ask if we need to return the result of the same Operator
+
+        const result = {
             tollOpID: tollOpID,
             requestTimestamp: currentTimestamp(),
             periodFrom: formattedDateFrom,
@@ -63,6 +70,20 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo) => {
                 passesCost: op.passesCost
             }))
         };
+
+        if (format === 'csv') {
+            const csvFields = ['tollOpID', 'requestTimestamp', 'periodFrom', 'periodTo', ...['visitingOpID', 'nPasses', 'passesCost']];
+            const csvData = result.vOpList.map(op => ({
+                tollOpID: result.tollOpID,
+                requestTimestamp: result.requestTimestamp,
+                periodFrom: result.periodFrom,
+                periodTo: result.periodTo,
+                ...op
+            }));
+            return parse(csvData, { fields: csvFields });
+        }
+
+        return result;
     } catch (error) {
         if (error.status === 400) {
             throw error;

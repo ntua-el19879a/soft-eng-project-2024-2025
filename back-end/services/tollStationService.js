@@ -8,9 +8,11 @@ const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators_v2";
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { parse } = require('json2csv');
+
 
 // Fetch passes from the database
-exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo) => {
+exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 'json') => {
   let client;
 
   try {
@@ -46,8 +48,14 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo) => {
       .sort({ timestamp: 1 }) // Sort by timestamp ascending
       .toArray();
 
+
+    // No Content
+    if (passes.length === 0) {
+      return null;
+    }
+
     // Construct the result
-    return {
+    const result = {
       stationID: tollStationID,
       stationOperator: operatorName,
       requestTimestamp: currentTimestamp(),
@@ -64,6 +72,24 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo) => {
         passCharge: pass.charge,
       })),
     };
+
+    // Convert to the requested format
+    if (format === 'csv') {
+      const csvFields = ['stationID', 'stationOperator', 'requestTimestamp', 'periodFrom', 'periodTo', 'nPasses', ...['passIndex', 'passID', 'timestamp', 'tagID', 'passCharge']];
+      const csvData = result.passList.map(item => ({
+        stationID: result.stationID,
+        stationOperator: result.stationOperator,
+        requestTimestamp: result.requestTimestamp,
+        periodFrom: result.periodFrom,
+        periodTo: result.periodTo,
+        nPasses: passes.length,
+        ...item
+      }));
+      return parse(csvData, { fields: csvFields }); // Convert JSON to CSV
+    }
+
+    return result;
+
   } catch (error) {
     if (error.status === 400) {
       throw error;

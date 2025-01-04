@@ -3,10 +3,11 @@ const uri = "mongodb://127.0.0.1:27017";
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = 'operators_v2';
+const { parse } = require('json2csv');
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 
 
-exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo) => {
+exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format = 'json') => {
     let client;
 
     try {
@@ -48,11 +49,15 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo) => {
             })
             .toArray();
 
+        // No Content
+        if (passData.length === 0) {
+            return null;
+        }
+
+
         // Calculate total cost
         const totalCost = passData.reduce((sum, pass) => sum + (pass.charge || 0), 0);
-
-        // Construct the response
-        return {
+        const result = {
             tollOpID: tollOpID,
             tagOpID: tagOpID,
             requestTimestamp: currentTimestamp(),
@@ -61,6 +66,13 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo) => {
             nPasses: passData.length,
             passesCost: totalCost
         };
+
+        if (format === 'csv') {
+            const csvFields = ['tollOpID', 'tagOpID', 'requestTimestamp', 'periodFrom', 'periodTo', 'nPasses', 'passesCost'];
+            return parse(result, { fields: csvFields });
+        }
+        return result;
+
     } catch (error) {
         if (error.status === 400) {
             throw error;
