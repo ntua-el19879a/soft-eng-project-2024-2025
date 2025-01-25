@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+const { Command } = require('commander');
+const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
+
+const program = new Command();
+
+// Base URL for the REST API
+const BASE_URL = 'http://localhost:9115/api';
+
+// Helper function to handle API requests (updated for POST requests)
+async function makeRequest(method, endpoint, params = {}, data = {}, filePath = null) {
+  try {
+    const config = {
+      method,
+      url: `${BASE_URL}/${endpoint}`,
+      params: params,
+      data: data,
+    };
+    if (filePath) {
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(filePath));
+      config.headers = formData.getHeaders();
+      config.data = formData;
+    } else if (data) {
+      config.data = data;
+    }
+    const response = await axios(config);
+    console.log(JSON.stringify(response.data, null, 2)); // Pretty print JSON
+  } catch (error) {
+    if (error.response) {
+      console.error('Error:', error.response.data);
+    } else {
+      console.error('Error:', error.message);
+    }
+  }
+}
+
+// Healthcheck command
+program
+  .command('healthcheck')
+  .description('Check the health of the system')
+  .action(() => {
+    makeRequest('get', 'admin/healthcheck');
+  });
+
+// Reset stations command
+program
+  .command('resetstations <filePath>')
+  .description('Reset the toll stations data')
+  .action(async (filePath) => {
+    await makeRequest('post', 'admin/resetstations', {}, {}, filePath);
+  });
+
+// Reset passes command
+program
+  .command('resetpasses')
+  .description('Reset the passes data')
+  .action(async () => {
+    await makeRequest('post', 'admin/resetpasses');
+  });
+
+// Get toll station passes command
+program
+  .command('getpasses <tollID> <date_from> <date_to>')
+  .description('Get passes for a specific toll station')
+  .option('--format <format>', 'Output format (json or csv)', 'json')
+  .action((tollID, date_from, date_to, options) => {
+    makeRequest(
+      'get',
+      `passes/${tollID}/${date_from}/${date_to}`,
+      { format: options.format }
+    );
+  });
+// Pass analysis command
+program
+  .command('passAnalysis <stationOpID> <tagOpID> <date_from> <date_to>')
+  .description('Analyze passes between two operators')
+  .option('--format <format>', 'Output format (json or csv)', 'json')
+  .action((stationOpID, tagOpID, date_from, date_to, options) => {
+    makeRequest(
+      'get',
+      `passAnalysis/${stationOpID}/${tagOpID}/${date_from}/${date_to}`,
+      { format: options.format }
+    );
+  });
+// Passes cost command
+program
+  .command('passesCost <tollOpID> <tagOpID> <date_from> <date_to>')
+  .description('Get the cost of passes between two operators')
+  .option('--format <format>', 'Output format (json or csv)', 'json')
+  .action((tollOpID, tagOpID, date_from, date_to, options) => {
+    makeRequest(
+      'get',
+      `passesCost/${tollOpID}/${tagOpID}/${date_from}/${date_to}`,
+      { format: options.format }
+    );
+  });
+// Charges by command
+program
+  .command('chargesBy <tollOpID> <date_from> <date_to>')
+  .description('Get charges by a specific operator')
+  .option('--format <format>', 'Output format (json or csv)', 'json')
+  .action((tollOpID, date_from, date_to, options) => {
+    makeRequest(
+      'get',
+      `chargesBy/${tollOpID}/${date_from}/${date_to}`,
+      { format: options.format }
+    );
+  });
+
+// Parse command-line arguments
+program.parse(process.argv);

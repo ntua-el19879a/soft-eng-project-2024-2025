@@ -23,6 +23,14 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+const Tag = mongoose.model(
+  'Tag',
+  new mongoose.Schema({
+    tagRef: { type: String, unique: true },
+    tagHomeID: String,
+  }, { collection: 'tags' })
+);
+
 const Pass = mongoose.model(
   'Pass',
   new mongoose.Schema(
@@ -85,7 +93,7 @@ const TollStationPass = mongoose.model(
   )
 );
 
-const Operator = mongoose.model(
+const operator = mongoose.model(
   'Operator',
   new mongoose.Schema({
     OpID: String,
@@ -97,12 +105,16 @@ const Operator = mongoose.model(
 // Healthcheck Endpoint
 app.get('/api/admin/healthcheck', async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(401).json({
+        status: 'failed',
+        dbconnection: mongoURI,
+      });
+    }
     // Count total stations
     const nStations = await TollStation.countDocuments();
-
     // Count total tags (from the Operator model)
-    const nTags = await Operator.countDocuments();
-
+    const nTags = await Tag.countDocuments();
     const nPasses = await Pass.countDocuments();
 
     res.status(200).json({
@@ -150,11 +162,21 @@ app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => 
             Price4: parseFloat(row['Price4']),
           },
         });
+
+        operator.push({
+          OpID: row['OpID'],
+          Operator: row['Operator'],
+          Email: row['Email'],
+        });
       })
       .on('end', async () => {
         try {
           await TollStation.deleteMany({});
           await TollStation.insertMany(tollStations);
+
+          const uniqueOperators = Array.from(new Map(operators.map(op => [op.OpID, op])).values());
+          await Operator.deleteMany({});
+          await Operator.insertMany(uniqueOperators);
           res.status(200).json({ status: 'OK' });
         } catch (err) {
           console.error('Error saving stations:', err);
@@ -168,6 +190,7 @@ app.post('/api/admin/resetstations', upload.single('file'), async (req, res) => 
     res.status(500).json({ status: 'failed', info: err.message });
   }
 });
+
 // Reset Passes Endpoint
 app.post('/api/admin/resetpasses', async (req, res) => {
   try {
