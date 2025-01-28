@@ -1,18 +1,30 @@
 #!/usr/bin/env node
 
 const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data'); // Για την αποστολή αρχείων
+const readline = require('readline');
 const { program } = require('commander');
 
 // Βασικό URL του API
 const BASE_URL = 'http://localhost:9115/api';
 
 // Helper function για αιτήματα HTTP
-async function makeRequest(method, endpoint) {
+async function makeRequest(method, endpoint, data = {}) {
   try {
-    const response = await axios({
+    const config = {
       method,
       url: `${BASE_URL}${endpoint}`,
-    });
+    };
+
+    if (method === 'post' && data instanceof FormData) {
+      config.headers = data.getHeaders();
+      config.data = data;
+    } else if (method === 'post') {
+      config.data = data;
+    }
+
+    const response = await axios(config);
     console.log('Response:', JSON.stringify(response.data, null, 2));
   } catch (error) {
     if (error.response) {
@@ -22,6 +34,21 @@ async function makeRequest(method, endpoint) {
     }
     process.exit(1);
   }
+}
+
+// Helper function για επιβεβαίωση
+async function confirmAction(message) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${message} (yes/no): `, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === 'yes');
+    });
+  });
 }
 
 // Εντολή healthcheck
@@ -35,19 +62,65 @@ program
 // Εντολή resetstations
 program
   .command('resetstations')
-  .description('Reset toll station data')
+  .description('Reset toll station data with a CSV file')
   .requiredOption('--file <file>', 'Path to the CSV file with station data')
+  .option('--dry-run', 'Preview the action without executing it')
   .action(async (options) => {
-    console.log('This functionality requires backend support for file uploads.');
-    process.exit(1); // Προσωρινά χωρίς υλοποίηση
+    if (options.dryRun) {
+      console.log(`This will reset toll station data using file: ${options.file}. No changes will be made.`);
+      process.exit(0);
+    }
+
+    const confirmed = await confirmAction('Are you sure you want to reset all toll station data?');
+    if (!confirmed) {
+      console.log('Action cancelled.');
+      process.exit(0);
+    }
+
+    try {
+      const form = new FormData();
+      form.append('file', fs.createReadStream(options.file));
+      await makeRequest('post', '/admin/resetstations', form);
+    } catch (error) {
+      console.error('Failed to reset stations:', error.message);
+      process.exit(1);
+    }
   });
 
 // Εντολή resetpasses
 program
   .command('resetpasses')
-  .description('Reset pass data')
-  .action(async () => {
+  .description('Reset all pass data')
+  .option('--dry-run', 'Preview the action without executing it')
+  .action(async (options) => {
+    if (options.dryRun) {
+      console.log('This will reset all pass data. No changes will be made.');
+      process.exit(0);
+    }
+
+    const confirmed = await confirmAction('Are you sure you want to reset all pass data?');
+    if (!confirmed) {
+      console.log('Action cancelled.');
+      process.exit(0);
+    }
+
     await makeRequest('post', '/admin/resetpasses');
+  });
+
+// Εντολή addpasses
+program
+  .command('addpasses')
+  .description('Add pass data from a CSV file')
+  .requiredOption('--file <file>', 'Path to the CSV file with pass data')
+  .action(async (options) => {
+    try {
+      const form = new FormData();
+      form.append('file', fs.createReadStream(options.file));
+      await makeRequest('post', '/admin/addpasses', form);
+    } catch (error) {
+      console.error('Failed to add passes:', error.message);
+      process.exit(1);
+    }
   });
 
 // Εντολή getpasses
@@ -99,6 +172,7 @@ program
     const endpoint = `/chargesBy/${options.tollOpID}/${options.date_from}/${options.date_to}`;
     await makeRequest('get', endpoint);
   });
+
 
 // Επεξεργασία των εντολών
 program.parse(process.argv);
