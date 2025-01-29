@@ -2,7 +2,7 @@ const { MongoClient } = require('mongodb');
 const uri = "mongodb://127.0.0.1:27017";
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
-const operatorsCollection = 'operators_v2';
+const operatorsCollection = 'operators';
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
@@ -67,9 +67,10 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo, format) => {
             vOpList: passData.map(op => ({
                 visitingOpID: op._id,
                 nPasses: op.nPasses,
-                passesCost: op.passesCost
+                passesCost: parseFloat(op.passesCost.toFixed(2))
             }))
         };
+
 
         if (format === 'csv') {
             const csvFields = ['tollOpID', 'requestTimestamp', 'periodFrom', 'periodTo', ...['visitingOpID', 'nPasses', 'passesCost']];

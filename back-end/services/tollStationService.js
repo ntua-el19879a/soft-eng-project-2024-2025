@@ -6,7 +6,7 @@ const { MongoClient } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
 const dbName = "toll-interop-db";
 const passesCollection = "passes";
-const operatorsCollection = "operators_v2";
+const operatorsCollection = "operators";
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 

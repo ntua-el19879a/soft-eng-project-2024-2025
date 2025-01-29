@@ -2,7 +2,7 @@ const { MongoClient } = require('mongodb');
 const uri = "mongodb://127.0.0.1:27017";
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
-const operatorsCollection = 'operators_v2';
+const operatorsCollection = 'operators';
 const { parse } = require('json2csv');
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 
@@ -56,7 +56,7 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
 
 
         // Calculate total cost
-        const totalCost = passData.reduce((sum, pass) => sum + (pass.charge || 0), 0);
+        const totalCost = passData.reduce((sum, pass) => sum + (pass.charge || 0), 0).toFixed(2);
         const result = {
             tollOpID: tollOpID,
             tagOpID: tagOpID,
@@ -64,7 +64,7 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
             periodFrom: formattedDateFrom,
             periodTo: formattedDateTo,
             nPasses: passData.length,
-            passesCost: totalCost
+            passesCost: parseFloat(totalCost)
         };
 
         if (format === 'csv') {
