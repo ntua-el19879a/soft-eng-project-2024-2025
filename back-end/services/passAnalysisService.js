@@ -2,7 +2,7 @@ const { MongoClient } = require('mongodb');
 const uri = "mongodb://127.0.0.1:27017";
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
-const operatorsCollection = "operators_v2";
+const operatorsCollection = "operators";
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
@@ -44,7 +44,7 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, for
         // Query for pass data
         const passData = await collection
             .find({
-                tollID: { $regex: `^${stationOp}` },
+                tollID: { $regex: `^${stationOpID}` },
                 tagHomeID: tagOpID,
                 timestamp: { $gte: formattedDateFrom, $lte: formattedDateTo },
             })

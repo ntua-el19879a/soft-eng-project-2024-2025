@@ -9,7 +9,7 @@ const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
 const dbName = 'toll-interop-db';
 const collections = {
     passes: 'passes',
-    operators: 'operators_v2',
+    operators: 'operators',
     tollStations: 'tollstations',
     tags: 'tags'
 };

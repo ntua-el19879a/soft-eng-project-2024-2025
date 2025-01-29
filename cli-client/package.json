@@ -1,6 +1,9 @@
 {
   "name": "toll-interop",
   "version": "1.0.0",
+  "bin": {
+    "se2403": "./cli.js"   
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

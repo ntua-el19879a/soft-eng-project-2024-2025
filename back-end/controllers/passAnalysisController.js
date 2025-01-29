@@ -48,10 +48,12 @@ exports.getPassAnalysis = async (req, res, next) => {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
         res.status(200).json(result);
     } catch (error) {
-        if (error.status === 400) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(500).json({ error: "Internal Server Error" });
+        if (!res.headersSent) {
+            if (error.status === 400) {
+                res.status(400).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: "Internal Server Error" });
+            }
         }
     }
 };
