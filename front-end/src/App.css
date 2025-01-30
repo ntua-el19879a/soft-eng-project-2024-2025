@@ -14,7 +14,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0c3994;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -35,4 +35,80 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.main_title{
+  margin:auto;
+  border: solid 7px;
+  border-radius: 10px;
+  color: royalblue;
+  font-family: "Avenir";
+  font-weight: bold;
+  text-align: center;
+  width: 700px;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333333;
+}
+
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1, h2, h3 {
+  color: #444;
+}
+
+form {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input[type="text"],
+select {
+  margin-left: 0.5rem;
+  padding: 0.3rem;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: royalblue;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.result-container {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.sub_div > div {
+  margin-bottom: 2rem;
 }

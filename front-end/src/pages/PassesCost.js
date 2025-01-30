@@ -1,57 +1,102 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const PassesCost = () => {
-  const [tollOpID, setTollOpID] = useState('');
-  const [tagOpID, setTagOpID] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [cost, setCost] = useState(null);
+function PassesCost() {
+  // React state για τα input fields
+  const [stationop, setstationop] = useState('');
+  const [tagop, settagop] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  // React state για το αποτέλεσμα και τα σφάλματα
+  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchPassesCost = async () => {
+  // Συνάρτηση που “τρέχει” όταν πατάς το κουμπί της φόρμας
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.get(
-        `http://localhost:9115/api/passesCost/${tollOpID}/${tagOpID}/${dateFrom}/${dateTo}`
-      );
-      setCost(response.data);
-    } catch (error) {
-      setError('Failed to fetch passes cost');
+      // Φτιάχνουμε το URL ακριβώς όπως είναι στο back-end:
+      // π.χ. /api/PassesCost/AM/20220101/20220114
+      const url = `/api/passesCost/${stationop}/${tagop}/${fromDate}/${toDate}`;
+
+      // Κάνουμε GET αίτημα στο back-end μέσω του proxy
+      const response = await axios.get(url);
+
+      // Αποθηκεύουμε το αποτέλεσμα
+      setResult(response.data);
+      setError(null);
+    } catch (err) {
+      setResult(null);
+      setError(err.message || 'Error during PassesCost request');
     }
   };
 
   return (
     <div>
-      <h2>Passes Cost</h2>
-      <input
-        placeholder="Toll Operator ID"
-        value={tollOpID}
-        onChange={(e) => setTollOpID(e.target.value)}
-      />
-      <input
-        placeholder="Tag Operator ID"
-        value={tagOpID}
-        onChange={(e) => setTagOpID(e.target.value)}
-      />
-      <input
-        placeholder="From (YYYYMMDD)"
-        value={dateFrom}
-        onChange={(e) => setDateFrom(e.target.value)}
-      />
-      <input
-        placeholder="To (YYYYMMDD)"
-        value={dateTo}
-        onChange={(e) => setDateTo(e.target.value)}
-      />
-      <button onClick={fetchPassesCost}>Fetch Passes Cost</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {cost ? (
-        <pre>{JSON.stringify(cost, null, 2)}</pre>
-      ) : (
-        <p>No cost data available</p>
+      <h2>PassesCost</h2>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Station Operator:
+          <input
+            type="text"
+            placeholder='StationOp'
+            value={stationop}
+            onChange={(e) => setstationop(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <label>
+          Tag Operator:
+          <input
+            type="text"
+            placeholder='TagOp'
+            value={tagop}
+            onChange={(e) => settagop(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <label>
+          From:
+          <input
+            type="text"
+            placeholder='YYYYMMDD'
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <label>
+          To:
+          <input
+            type="text"
+            placeholder='YYYYMMDD'
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <button type="submit">Submit</button>
+      </form>
+
+      {error && (
+        <p style={{ color: 'red' }}>
+          <strong>Error:</strong> {error}
+        </p>
+      )}
+
+      {result && (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Αποτελέσματα:</h3>
+          <pre>{JSON.stringify(result, null, 2)}</pre>
+        </div>
       )}
     </div>
   );
-};
+}
 
 export default PassesCost;

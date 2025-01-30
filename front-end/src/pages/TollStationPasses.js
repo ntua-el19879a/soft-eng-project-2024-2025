@@ -1,70 +1,87 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const TollStationPasses = () => {
-  const [tollID, setTollID] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [passes, setPasses] = useState([]);
+function TollStationPasses() {
+
+  const [station, setStation] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+
+  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchPasses = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     try {
-      const response = await axios.get(
-        `http://localhost:9115/api/tollStationPasses/${tollID}/${dateFrom}/${dateTo}`
-      );
-      setPasses(response.data);
-    } catch (error) {
-      setError('Failed to fetch toll station passes');
+      const url = `/api/tollStationPasses/${station}/${fromDate}/${toDate}`;
+
+
+      const response = await axios.get(url);
+      setResult(response.data);
+      setError(null);
+    } catch (err) {
+      setResult(null);
+      setError(err.message || 'Error during tollStationPasses request');
     }
   };
 
   return (
     <div>
-      <h2>Toll Station Passes</h2>
-      <input
-        placeholder="Toll ID"
-        value={tollID}
-        onChange={(e) => setTollID(e.target.value)}
-      />
-      <input
-        placeholder="From (YYYYMMDD)"
-        value={dateFrom}
-        onChange={(e) => setDateFrom(e.target.value)}
-      />
-      <input
-        placeholder="To (YYYYMMDD)"
-        value={dateTo}
-        onChange={(e) => setDateTo(e.target.value)}
-      />
-      <button onClick={fetchPasses}>Fetch Passes</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {passes.length > 0 ? (
-        <table border="1">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Toll ID</th>
-              <th>Vehicle Tag</th>
-              <th>Charge</th>
-            </tr>
-          </thead>
-          <tbody>
-            {passes.map((pass, index) => (
-              <tr key={index}>
-                <td>{pass.timestamp}</td>
-                <td>{pass.tollID}</td>
-                <td>{pass.tagRef}</td>
-                <td>{pass.charge}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No passes found</p>
+      <h2>TollStationPasses</h2>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Station:
+          <input
+            type="text"
+            placeholder='Station'
+            value={station}
+            onChange={(e) => setStation(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <label>
+          From:
+          <input
+            type="text"
+            placeholder='YYYYMMDD'
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </label>
+        <br />
+
+        <label>
+          To:
+          <input
+            type="text"
+            placeholder='YYYYMMDD'
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </label>
+        <br />
+        <br />
+
+        <button type="submit">Submit</button>
+      </form>
+
+      {error && (
+        <p style={{ color: 'red' }}>
+          <strong>Error:</strong> {error}
+        </p>
+      )}
+
+      {result && (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Αποτελέσματα:</h3>
+          <pre>{JSON.stringify(result, null, 2)}</pre>
+        </div>
       )}
     </div>
   );
-};
+}
 
 export default TollStationPasses;
