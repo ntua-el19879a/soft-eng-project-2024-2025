@@ -152,7 +152,7 @@ program
 program
   .command('passanalysis')
   .description('Analyze passes between operators')
-  .requiredOption('--station <station>', 'Station Operator ID')
+  .requiredOption('--stationop <stationop>', 'Station Operator ID')
   .requiredOption('--tagop <tagop>', 'Tag Operator ID')
   .requiredOption('--from <from>', 'Start date (YYYYMMDD)')
   .requiredOption('--to <to>', 'End date (YYYYMMDD)')
