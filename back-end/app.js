@@ -1,13 +1,19 @@
 const express = require('express');
 const app = express();
+const { authMiddleware, adminMiddleware } = require('./middlewares/authMiddleware');
 
 const adminRoutes = require('./routes/adminRoutes');
+const authRoute = require('./routes/authRoute'); // 
 const tollStationRoute = require('./routes/tollStationRoute');
 const passAnalysisRoute = require('./routes/passAnalysisRoute');
 const passesCostRoute = require('./routes/passesCostRoute');
 const chargesByRoute = require('./routes/chargesByRoute');
 
 app.use(express.json());
+
+// Auth 
+app.use('/api/auth', authRoute); // Login/logout
+
 
 // Admin endpoints
 app.use('/api/admin', adminRoutes);

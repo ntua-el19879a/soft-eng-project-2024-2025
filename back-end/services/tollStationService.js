@@ -1,9 +1,5 @@
-// Interaction with MongoDB for toll station data
-// Purpose: Contains business logic and operations that interact with the database or other external systems.
-// Abstracts database queries and constructs the business response.
-
 const { MongoClient } = require("mongodb");
-const uri = "mongodb://127.0.0.1:27017";
+const { mongoUri } = require('../config/dbConfig');
 const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
@@ -22,7 +18,7 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
     const formattedDateTo = timestampFormatter(dateTo, "2359");
 
     // Connect to MongoDB
-    client = new MongoClient(uri);
+    client = new MongoClient(mongoUri);
     await client.connect();
 
     // Get the collection
