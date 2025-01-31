@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const uri = "mongodb://127.0.0.1:27017";
+const { mongoUri } = require('../config/dbConfig');
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = 'operators';
@@ -17,7 +17,7 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
         const formattedDateTo = timestampFormatter(dateTo, "2359");
 
         // Connect to MongoDB
-        client = new MongoClient(uri);
+        client = new MongoClient(mongoUri);
         await client.connect();
 
         // Get the collection

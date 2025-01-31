@@ -4,8 +4,7 @@ const fs = require('fs');
 const moment = require('moment-timezone');
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
-
-const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
+const { mongoUri } = require('../config/dbConfig');
 const dbName = 'toll-interop-db';
 const collections = {
     passes: 'passes',
@@ -15,7 +14,7 @@ const collections = {
 };
 
 const connectDB = async () => {
-    return MongoClient.connect(uri, {
+    return MongoClient.connect(mongoUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         serverSelectionTimeoutMS: 5000
@@ -37,7 +36,7 @@ module.exports = {
 
             return {
                 status: 'OK',
-                dbconnection: uri,
+                dbconnection: mongoUri,
                 n_stations,
                 n_tags,
                 n_passes,
