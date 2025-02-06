@@ -1,16 +1,20 @@
+// services/adminService.js
+
 const { MongoClient } = require('mongodb');
 const csv = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment-timezone');
-const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
-const { parse } = require('json2csv');
+const { currentTimestamp } = require('../utils/timestampFormatter');
+const bcrypt = require('bcrypt');
 const { mongoUri } = require('../config/dbConfig');
+
 const dbName = 'toll-interop-db';
 const collections = {
     passes: 'passes',
-    operators: 'operators',
+    operators: 'operators', // use "operators" everywhere
     tollStations: 'tollstations',
-    tags: 'tags'
+    tags: 'tags',
+    users: 'users'
 };
 
 const connectDB = async () => {
@@ -55,47 +59,79 @@ module.exports = {
             client = await connectDB();
             const db = client.db(dbName);
             const stations = [];
+            // Use a Map keyed on the original field "OpID"
             const operators = new Map();
 
             await new Promise((resolve, reject) => {
                 fs.createReadStream(filePath)
                     .pipe(csv())
                     .on('data', (row) => {
+                        // Trim values and parse numerical fields
+
+                        const trimmedRow = Object.fromEntries(
+                            Object.entries(row).map(([key, value]) => {
+                                // Remove BOM if present from the key
+                                const cleanKey = key.replace(/^\uFEFF/, '');
+                                return [cleanKey, (typeof value === 'string') ? value.trim() : value];
+                            })
+                        );
+                        const opID = trimmedRow.OpID;
+                        const operatorName = row.Operator ? row.Operator.trim() : '';
+                        const tollID = row.TollID ? row.TollID.trim() : '';
+                        const name = row.Name ? row.Name.trim() : '';
+                        const pm = row.PM ? row.PM.trim() : '';
+                        const locality = row.Locality ? row.Locality.trim() : '';
+                        const road = row.Road ? row.Road.trim() : '';
+                        const lat = parseFloat(row.Lat);
+                        const long = parseFloat(row.Long);
+                        const email = row.Email ? row.Email.trim() : '';
+                        const price1 = parseFloat(row.Price1);
+                        const price2 = parseFloat(row.Price2);
+                        const price3 = parseFloat(row.Price3);
+                        const price4 = parseFloat(row.Price4);
+
+                        // Store the station with the original "OpID" field
                         stations.push({
-                            OpID: row.OpID,
-                            Operator: row.Operator,
-                            TollID: row.TollID,
-                            Name: row.Name,
-                            PM: row.PM,
-                            Locality: row.Locality,
-                            Road: row.Road,
-                            Lat: parseFloat(row.Lat),
-                            Long: parseFloat(row.Long),
-                            Email: row.Email,
+                            OpID: opID, // use original field name
+                            Operator: operatorName,
+                            tollID,
+                            Name: name,
+                            PM: pm,
+                            Locality: locality,
+                            Road: road,
+                            Lat: lat,
+                            Long: long,
+                            Email: email,
                             Prices: {
-                                Price1: parseFloat(row.Price1),
-                                Price2: parseFloat(row.Price2),
-                                Price3: parseFloat(row.Price3),
-                                Price4: parseFloat(row.Price4)
+                                Price1: price1,
+                                Price2: price2,
+                                Price3: price3,
+                                Price4: price4
                             }
                         });
 
-                        if (!operators.has(row.OpID)) {
-                            operators.set(row.OpID, {
-                                OpID: row.OpID,
-                                Operator: row.Operator,
-                                Email: row.Email
+                        // Add or update the operator in the operators map (using "OpID" as key)
+                        if (!operators.has(opID)) {
+                            operators.set(opID, {
+                                OpID: opID,
+                                Operator: operatorName,
+                                Email: email
                             });
                         }
                     })
                     .on('end', async () => {
                         try {
+                            // Reset toll stations collection
                             await db.collection(collections.tollStations).deleteMany({});
-                            await db.collection(collections.tollStations).insertMany(stations);
+                            if (stations.length > 0) {
+                                await db.collection(collections.tollStations).insertMany(stations);
+                            }
 
+                            // Reset operators collection
                             await db.collection(collections.operators).deleteMany({});
-                            await db.collection(collections.operators).insertMany([...operators.values()]);
-
+                            if (operators.size > 0) {
+                                await db.collection(collections.operators).insertMany(Array.from(operators.values()));
+                            }
                             resolve();
                         } catch (err) {
                             reject(err);
@@ -103,6 +139,8 @@ module.exports = {
                     })
                     .on('error', reject);
             });
+        } catch (error) {
+            throw new Error(`Reset stations failed: ${error.message}`);
         } finally {
             if (client) await client.close();
         }
@@ -118,6 +156,17 @@ module.exports = {
                 db.collection(collections.passes).deleteMany({}),
                 db.collection(collections.tags).deleteMany({})
             ]);
+
+            // Reset admin account credentials (if authentication is implemented)
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash("freepasses4all", saltRounds);
+            await db.collection(collections.users).updateOne(
+                { username: "admin" },
+                { $set: { password: hashedPassword } },
+                { upsert: true }
+            );
+        } catch (error) {
+            throw new Error(`Reset passes failed: ${error.message}`);
         } finally {
             if (client) await client.close();
         }
@@ -131,36 +180,59 @@ module.exports = {
             const bulkPassOps = [];
             const bulkTagOps = [];
             const seenTags = new Set();
+            const seenPasses = new Set();
 
             await new Promise((resolve, reject) => {
                 fs.createReadStream(filePath)
                     .pipe(csv({
                         headers: ['timestamp', 'tollID', 'tagRef', 'tagHomeID', 'charge'],
-                        skipLines: 1
+                        skipLines: 1,
                     }))
                     .on('data', (row) => {
                         try {
-                            const timestamp = moment.tz(row.timestamp, 'M/D/YY HH:mm', 'UTC').toDate();
+                            // Create a unique key for the pass event to avoid duplicates
+                            const passKey = `${row.timestamp}-${row.tollID}-${row.tagRef}-${row.tagHomeID}-${row.charge}`;
+                            if (seenPasses.has(passKey)) {
+                                // Duplicate detected in the CSV file; skip insertion.
+                                return;
+                            }
+                            seenPasses.add(passKey);
+
+                            // Parse timestamp and validate charge
+                            const m = moment(row.timestamp, 'YYYY-MM-DD HH:mm', 'UTC', true);
+                            if (!m.isValid()) {
+                                console.error(`Invalid timestamp encountered: "${row.timestamp}"`);
+                                throw new Error(`Invalid timestamp format: ${row.timestamp}`);
+                            }
+                            timestamp = m.toDate();
+                            const tollID = row.tollID;
+                            const tagRef = row.tagRef;
+                            const tagHomeID = row.tagHomeID;
+                            const charge = parseFloat(row.charge);
+                            if (isNaN(charge)) {
+                                throw new Error(`Invalid charge value: ${row.charge}`);
+                            }
 
                             bulkPassOps.push({
                                 insertOne: {
                                     document: {
                                         timestamp,
-                                        tollID: row.tollID.trim(),
-                                        tagRef: row.tagRef.trim(),
-                                        tagHomeID: row.tagHomeID.trim(),
-                                        charge: parseFloat(row.charge)
+                                        tollID,
+                                        tagRef,
+                                        tagHomeID,
+                                        charge
                                     }
                                 }
                             });
 
-                            const tagKey = `${row.tagRef.trim()}-${row.tagHomeID.trim()}`;
+                            // Process tags (avoiding duplicates)
+                            const tagKey = `${tagRef}-${tagHomeID}`;
                             if (!seenTags.has(tagKey)) {
                                 seenTags.add(tagKey);
                                 bulkTagOps.push({
                                     updateOne: {
-                                        filter: { tagRef: row.tagRef.trim() },
-                                        update: { $setOnInsert: { tagHomeID: row.tagHomeID.trim() } },
+                                        filter: { tagRef },
+                                        update: { $setOnInsert: { tagHomeID } },
                                         upsert: true
                                     }
                                 });
@@ -184,6 +256,8 @@ module.exports = {
                     })
                     .on('error', reject);
             });
+        } catch (error) {
+            throw new Error(`Add passes failed: ${error.message}`);
         } finally {
             if (client) await client.close();
         }

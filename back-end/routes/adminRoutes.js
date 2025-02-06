@@ -8,9 +8,8 @@ const { authenticateJWT, authorizeRoles } = require('../middlewares/authMiddlewa
 router.use(authenticateJWT, authorizeRoles(['admin']));
 
 router.get('/healthcheck', adminController.healthCheck);
-router.post('/resetstations', adminController.upload, adminController.resetStations)
+router.post('/resetstations', upload.single('file'), adminController.resetStations);
 router.post('/resetpasses', adminController.resetPasses);
 router.post('/addpasses', upload.single('file'), adminController.addPasses);
-
 
 module.exports = router;

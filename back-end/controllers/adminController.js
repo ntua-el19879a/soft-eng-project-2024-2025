@@ -63,6 +63,6 @@ module.exports = {
         }
     },
 
-    // Multer middleware for file uploads
+    // Middleware for handling file uploads
     upload: upload.single('file')
 };
