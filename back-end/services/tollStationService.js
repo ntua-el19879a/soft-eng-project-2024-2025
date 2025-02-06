@@ -3,6 +3,7 @@ const { mongoUri } = require('../config/dbConfig');
 const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
+const tollStationsCollection = "tollstations";
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
@@ -12,6 +13,13 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
   let client;
 
   try {
+
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(dateFrom) || !dateRegex.test(dateTo)) {
+      const error = new Error("Invalid date format. Use YYYYMMDD");
+      error.status = 400;
+      throw error;
+    }
 
     // Convert dateFrom and dateTo to YYYY-MM-DD HH:MM format
     const formattedDateFrom = timestampFormatter(dateFrom, "0000");
@@ -26,20 +34,26 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
     const collection = db.collection(passesCollection);
 
     // Check if tollStationID is valid
-    const operator = await db.collection(operatorsCollection)
-      .findOne({ TollID: tollStationID });
-    if (!operator) {
+    const tollStation = await db.collection(tollStationsCollection)
+      .findOne({ tollID: tollStationID.trim() });
+    if (!tollStation) {
       const error = new Error("Invalid toll station ID");
       error.status = 400;
       throw error;
     }
+
+    const operator = await db.collection(operatorsCollection)
+      .findOne({ OpID: tollStation.OpID });
+
     const operatorName = operator.OpID;
 
     // Query for passes in the date range for the specified toll station
     const passes = await collection
       .find({
-        tollID: tollStationID,
-        timestamp: { $gte: formattedDateFrom, $lte: formattedDateTo },
+        tollID: tollStationID.trim(),
+        timestamp: {
+          $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+        },
       })
       .sort({ timestamp: 1 }) // Sort by timestamp ascending
       .toArray();
@@ -64,7 +78,7 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
         timestamp: pass.timestamp,
         tagID: pass.tagRef,
         tagProvider: pass.tagHomeID,
-        passType: pass.tagHomeID === tollStationID ? "home" : "away",
+        passType: pass.tagHomeID === operatorName ? "home" : "away",
         passCharge: pass.charge,
       })),
     };
