@@ -39,7 +39,9 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo, format) => {
                 {
                     $match: {
                         tollID: { $regex: `^${tollOpID}` },
-                        timestamp: { $gte: formattedDateFrom, $lte: formattedDateTo }
+                        timestamp: {
+                            $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                        }
                     }
                 },
                 {

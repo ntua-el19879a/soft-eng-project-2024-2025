@@ -46,7 +46,9 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, for
             .find({
                 tollID: { $regex: `^${stationOpID}` },
                 tagHomeID: tagOpID,
-                timestamp: { $gte: formattedDateFrom, $lte: formattedDateTo },
+                timestamp: {
+                    $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                },
             })
             .sort({ timestamp: 1 }) // Sort by timestamp ascending
             .toArray();

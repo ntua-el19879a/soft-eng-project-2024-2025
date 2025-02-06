@@ -1,8 +1,8 @@
 const { MongoClient } = require('mongodb');
 const { mongoUri } = require('../config/dbConfig');
-const dbName = 'toll-interop-db';
-const passesCollection = 'passes';
-const operatorsCollection = 'operators';
+const dbName = "toll-interop-db";
+const passesCollection = "passes";
+const operatorsCollection = "operators";
 const { parse } = require('json2csv');
 const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 
@@ -11,6 +11,13 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
     let client;
 
     try {
+
+        const dateRegex = /^\d{8}$/;
+        if (!dateRegex.test(dateFrom) || !dateRegex.test(dateTo)) {
+            const error = new Error("Invalid date format. Use YYYYMMDD");
+            error.status = 400;
+            throw error;
+        }
 
         // Convert dateFrom and dateTo to YYYY-MM-DD HH:MM format
         const formattedDateFrom = timestampFormatter(dateFrom, "0000");
@@ -40,12 +47,15 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
             throw error;
         }
 
+
         // Query for passes data between two operators
         const passData = await collection
             .find({
                 tollID: { $regex: `^${tollOpID}` },
                 tagHomeID: tagOpID,
-                timestamp: { $gte: formattedDateFrom, $lte: formattedDateTo },
+                timestamp: {
+                    $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                },
             })
             .toArray();
 
