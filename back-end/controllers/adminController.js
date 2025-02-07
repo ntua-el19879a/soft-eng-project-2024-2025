@@ -1,6 +1,8 @@
 const adminService = require('../services/adminService');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
+const { parse } = require('json2csv');
+
 
 module.exports = {
     healthCheck: async (req, res) => {
@@ -8,10 +10,13 @@ module.exports = {
             const result = await adminService.healthCheck();
             res.status(200).json(result);
         } catch (error) {
-            res.status(500).json({
-                error: error.message,
-                dbconnection: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/toll-interop-db'
-            });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 
@@ -26,10 +31,13 @@ module.exports = {
             await adminService.resetStations(req.file.path);
             res.status(200).json({ status: 'OK' });
         } catch (error) {
-            res.status(500).json({
-                error: error.message,
-                status: 'failed'
-            });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 
@@ -38,10 +46,13 @@ module.exports = {
             await adminService.resetPasses();
             res.status(200).json({ status: 'OK' });
         } catch (error) {
-            res.status(500).json({
-                error: error.message,
-                status: 'failed'
-            });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 
@@ -56,10 +67,13 @@ module.exports = {
             await adminService.addPasses(req.file.path);
             res.status(200).json({ status: 'OK' });
         } catch (error) {
-            res.status(500).json({
-                error: error.message,
-                status: 'failed'
-            });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 
@@ -74,16 +88,61 @@ module.exports = {
             const result = await adminService.modifyUser(username, password, role || 'operator');
             res.status(200).json(result);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 
     getUsers: async (req, res) => {
         try {
+            const format = req.query.format || 'json'; // Query parameter to define response format
+            if (format !== 'json' && format !== 'csv') {
+                return res.status(400).json({ error: "Invalid format specified. Use 'json' or 'csv'." });
+            }
             const result = await adminService.getUsers();
+            // Respond with the appropriate format
+            if (format === 'csv') {
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                const csv = parse(result.users, { fields: ['username', 'role'] });
+                return res.status(200).send(csv);
+            }
+
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.status(200).json(result);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
+        }
+    },
+
+    deleteUser: async (req, res) => {
+        try {
+            const { username } = req.params;
+
+            if (!username) {
+                return res.status(400).json({ error: "Username is required" });
+            }
+
+            const result = await adminService.deleteUser(username);
+            res.status(200).json(result);
+        } catch (error) {
+            if (!res.headersSent) {
+                if (error.status === 400) {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: "Internal Server Error" });
+                }
+            }
         }
     },
 

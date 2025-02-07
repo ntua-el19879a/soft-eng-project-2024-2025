@@ -8,6 +8,7 @@ const { currentTimestamp } = require('../utils/timestampFormatter');
 const bcrypt = require('bcrypt');
 const { mongoUri } = require('../config/dbConfig');
 const { refreshToken } = require('./authService');
+const { format } = require('path');
 
 const dbName = 'toll-interop-db';
 const collections = {
@@ -331,5 +332,37 @@ module.exports = {
         } finally {
             if (client) await client.close();
         }
+    },
+
+    deleteUser: async (username) => {
+        let client;
+        try {
+            client = await connectDB();
+
+            const db = client.db(dbName);
+            const users = await db.collection(collections.users);
+
+            const user = await users.findOne({ username });
+            if (!user) {
+                return { status: 'failed', message: `User '${username}' not found` };
+            }
+
+            if (user.role === 'admin') {
+                return { status: 'failed', message: "Cannot delete an admin user." };
+            }
+
+            const result = await users.deleteOne({ username });
+
+            if (result.deletedCount === 0) {
+                return { status: 'failed', message: `User '${username}' could not be deleted` };
+            }
+
+            return { status: 'OK', message: `User '${username}' deleted successfully` };
+        } catch (error) {
+            throw new Error(`User deletion failed: ${error.message}`);
+        } finally {
+            if (client) await client.close();
+        }
     }
+
 };

@@ -8,7 +8,7 @@ const { program } = require('commander');
 const path = require('path');
 
 const TOKEN_PATH = path.join(__dirname, '/.token');
-console.log(TOKEN_PATH);
+//console.log(TOKEN_PATH);
 
 const saveToken = (token) => {
   if (typeof token !== 'string' || !token) {
@@ -31,6 +31,9 @@ async function makeRequest(method, endpoint, data = {}, format = 'json') {
     if (!token) {
       console.error("Error: You must log in first (`node cli.js login`)");
       return;
+    }
+    if (!endpoint.includes('format=')) {
+      endpoint += (endpoint.includes('?') ? '&' : '?') + `format=${format}`;
     }
 
     let options = {
@@ -75,19 +78,23 @@ async function makeRequest(method, endpoint, data = {}, format = 'json') {
     }
 
     const response = await fetch(`${BASE_URL}${endpoint}`, options);
+    const contentType = response.headers.get("Content-Type");
     const rawText = await response.text();
 
-    if (format === 'csv') {
+    if (contentType.includes("text/csv")) {
       console.log(rawText);
-    } else {
+    } else if (contentType.includes("application/json")) {
       let result;
       try {
         result = JSON.parse(rawText);
+        console.log(JSON.stringify(result, null, 2));
       } catch (e) {
         console.error("Error parsing JSON:", e.message);
         process.exit(1);
       }
-      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.error("Unexpected response format:", contentType);
+      console.log(rawText);
     }
   } catch (error) {
     if (error.response) {
@@ -177,13 +184,13 @@ program
   .command('login')
   .description('Login as a user')
   .requiredOption('--username <username>', 'Username')
-  .requiredOption('--password <password>', 'Password')
+  .requiredOption('--passw <passw>', 'Password')
   .action(async (options) => {
     try {
       const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: options.username, password: options.password })
+        body: JSON.stringify({ username: options.username, password: options.passw })
       });
 
       const result = await response.json();
@@ -205,11 +212,18 @@ program
     }
   });
 
+program
+  .command('logout')
+  .description('Logout the current user')
+  .action(() => {
+    clearToken();
+    console.log("Logged out successfully.");
+  });
+
 // ------------------------
 // ADMIN COMMANDS SCOPE
 // ------------------------
 const admin = program.command('admin').description('Admin commands');
-
 
 // Admin: healthcheck
 admin
@@ -279,14 +293,46 @@ admin
     }
   });
 
-// Admin: logout
+// Admin: usermod (Modify or Create User)
 admin
-  .command('logout')
-  .description('Logout the current user')
-  .action(() => {
-    clearToken();
-    console.log("Logged out successfully.");
+  .command('usermod')
+  .description('Modify a user password or create a new user if not found')
+  .requiredOption('--username <username>', 'Username of the user')
+  .requiredOption('--passw <passw>', 'New password for the user')
+  .option('--role <role>', 'User role (operator or minister, default: operator)', 'operator')
+  .action(async (options) => {
+    const endpoint = `/admin/usermod/${options.username}/${options.passw}/${options.role}`;
+    await makeRequest('post', endpoint);
   });
+
+// Admin: users (List all users)
+admin
+  .command('users')
+  .description('List all users in the system')
+  .option('--format <format>', 'Output format (csv/json)', 'csv')
+  .action(async (options) => {
+    const endpoint = '/admin/users';
+    const params = `?format=${options.format}`;
+    await makeRequest('get', endpoint + params);
+  });
+
+// Admin: userdel (Delete a user)
+admin
+  .command('userdel')
+  .description('Delete a user (Admins cannot be deleted)')
+  .requiredOption('--username <username>', 'Username of the user to delete')
+  .action(async (options) => {
+    const confirmed = await confirmAction(`Are you sure you want to delete user '${options.username}'?`);
+    if (!confirmed) {
+      console.log('Action cancelled.');
+      process.exit(0);
+    }
+
+    const endpoint = `/admin/userdel/${options.username}`;
+    await makeRequest('delete', endpoint);
+  });
+
+
 
 // ------------------------
 // OTHER (Non-admin) COMMANDS
