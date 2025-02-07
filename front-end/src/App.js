@@ -21,11 +21,11 @@ function App() {
             <li><Link to="/chargesby">Charges By</Link></li>
             <li><Link to="/tollstationpasses">Toll Station Passes</Link></li>
             <li><Link to="/passanalysis">Pass Analysis</Link></li>
-          <li><Link to="/healthcheck">Health Check</Link></li>
+            <li><Link to="/healthcheck">Health Check</Link></li>
           </ul>
         </nav>
 
-          <Routes>
+        <Routes>
           <Route path="/passescost" element={<PassesCost />} />
           <Route path="/healthcheck" element={<HealthCheck />} />
           <Route path="/chargesby" element={<ChargesBy />} />

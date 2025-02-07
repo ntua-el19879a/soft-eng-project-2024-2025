@@ -214,14 +214,24 @@ module.exports = {
                             }
 
                             bulkPassOps.push({
-                                insertOne: {
-                                    document: {
-                                        timestamp,
-                                        tollID,
-                                        tagRef,
-                                        tagHomeID,
-                                        charge
-                                    }
+                                updateOne: {
+                                    filter: {
+                                        timestamp: timestamp,
+                                        tollID: tollID,
+                                        tagRef: tagRef,
+                                        tagHomeID: tagHomeID,
+                                        charge: charge
+                                    },
+                                    update: {
+                                        $setOnInsert: {
+                                            timestamp: timestamp,
+                                            tollID: tollID,
+                                            tagRef: tagRef,
+                                            tagHomeID: tagHomeID,
+                                            charge: charge
+                                        }
+                                    },
+                                    upsert: true
                                 }
                             });
 
