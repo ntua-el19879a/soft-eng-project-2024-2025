@@ -1,7 +1,5 @@
 const express = require('express');
 const app = express();
-const { authMiddleware, adminMiddleware } = require('./middlewares/authMiddleware');
-
 const adminRoutes = require('./routes/adminRoutes');
 const authRoute = require('./routes/authRoute'); // 
 const tollStationRoute = require('./routes/tollStationRoute');
@@ -13,7 +11,6 @@ app.use(express.json());
 
 // Auth 
 app.use('/api/auth', authRoute); // Login/logout
-
 
 // Admin endpoints
 app.use('/api/admin', adminRoutes);

@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const { currentTimestamp } = require('../utils/timestampFormatter');
 const bcrypt = require('bcrypt');
 const { mongoUri } = require('../config/dbConfig');
+const { refreshToken } = require('./authService');
 
 const dbName = 'toll-interop-db';
 const collections = {
@@ -14,13 +15,12 @@ const collections = {
     operators: 'operators', // use "operators" everywhere
     tollStations: 'tollstations',
     tags: 'tags',
-    users: 'users'
+    users: 'users',
+    refreshToken: 'refreshToken'
 };
 
 const connectDB = async () => {
     return MongoClient.connect(mongoUri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         serverSelectionTimeoutMS: 5000
     });
 };
@@ -154,16 +154,16 @@ module.exports = {
 
             await Promise.all([
                 db.collection(collections.passes).deleteMany({}),
-                db.collection(collections.tags).deleteMany({})
+                db.collection(collections.tags).deleteMany({}),
+                db.collection(collections.users).deleteMany({}),
+                db.collection(collections.refreshToken).deleteMany({})
             ]);
 
             // Reset admin account credentials (if authentication is implemented)
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash("freepasses4all", saltRounds);
-            await db.collection(collections.users).updateOne(
-                { username: "admin" },
-                { $set: { password: hashedPassword } },
-                { upsert: true }
+            await db.collection(collections.users).insertOne(
+                { username: 'admin', password: hashedPassword, role: 'admin' }
             );
         } catch (error) {
             throw new Error(`Reset passes failed: ${error.message}`);
@@ -258,6 +258,66 @@ module.exports = {
             });
         } catch (error) {
             throw new Error(`Add passes failed: ${error.message}`);
+        } finally {
+            if (client) await client.close();
+        }
+    },
+
+    modifyUser: async (username, newPassword, role = "operator") => {
+        let client;
+        try {
+            client = await connectDB();
+            const db = client.db(dbName);
+            const users = db.collection(collections.users);
+
+            // Check if the user already exists
+            const existingUser = await users.findOne({ username });
+
+            // Hash the password
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+            if (existingUser) {
+                //  User exists → Update password & optionally role
+                const updateFields = { password: hashedPassword };
+
+                // Only update role if provided
+                if (role === 'minister' || role === 'operator') {
+                    updateFields.role = role;
+                } else {
+                    throw new Error(`Invalid role: ${role}`);
+                }
+
+                await users.updateOne({ username }, { $set: updateFields });
+
+                return { status: 'OK', message: `User ${username} updated successfully` };
+            } else {
+                //  User doesn't exist → Create new user
+                if (role === 'minister' || role === 'operator') {
+                    await users.insertOne({ username, password: hashedPassword, role });
+                }
+                else {
+                    throw new Error(`Invalid role: ${role}`);
+                }
+
+                return { status: 'OK', message: `User ${username} created successfully` };
+            }
+        } catch (error) {
+            throw new Error(`User modification failed: ${error.message}`);
+        } finally {
+            if (client) await client.close();
+        }
+    },
+
+    getUsers: async () => {
+        let client;
+        try {
+            client = await connectDB();
+            const db = client.db(dbName);
+            const users = await db.collection(collections.users).find({}, { projection: { password: 0 } }).toArray();
+            return { status: 'OK', users };
+        } catch (error) {
+            throw new Error(`Fetching users failed: ${error.message}`);
         } finally {
             if (client) await client.close();
         }

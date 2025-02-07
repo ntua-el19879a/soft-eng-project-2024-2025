@@ -5,11 +5,15 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const { authenticateJWT, authorizeRoles } = require('../middlewares/authMiddleware');
 
+router.post('/resetpasses', adminController.resetPasses);
+
 router.use(authenticateJWT, authorizeRoles(['admin']));
 
 router.get('/healthcheck', adminController.healthCheck);
 router.post('/resetstations', upload.single('file'), adminController.resetStations);
-router.post('/resetpasses', adminController.resetPasses);
+//router.post('/resetpasses', adminController.resetPasses);
 router.post('/addpasses', upload.single('file'), adminController.addPasses);
+router.post('/usermod/:username/:password/:role?', adminController.modifyUser);
+router.get('/users', adminController.getUsers);
 
 module.exports = router;

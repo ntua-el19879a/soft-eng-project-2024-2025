@@ -63,6 +63,30 @@ module.exports = {
         }
     },
 
+    modifyUser: async (req, res) => {
+        try {
+            const { username, password, role } = req.params;
+            if (!username || !password) {
+                return res.status(400).json({ error: "Username and password are required" });
+            }
+
+            // Default role to "operator" if not provided
+            const result = await adminService.modifyUser(username, password, role || 'operator');
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
+    getUsers: async (req, res) => {
+        try {
+            const result = await adminService.getUsers();
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    },
+
     // Middleware for handling file uploads
     upload: upload.single('file')
 };
