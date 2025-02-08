@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './CommonForm.css'; // Import the common form CSS
 
 function PassesCost() {
   const [stationop, setStationop] = useState('');
@@ -25,48 +26,46 @@ function PassesCost() {
   return (
     <div className="passes-cost-container">
       <h2>Passes Cost</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Station Operator:
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-group">
+          <label>Station Operator:</label>
           <input
             type="text"
             placeholder="StationOp"
             value={stationop}
             onChange={(e) => setStationop(e.target.value)}
           />
-        </label>
-        <br />
-        <label>
-          Tag Operator:
+        </div>
+        <div className="form-group">
+          <label>Tag Operator:</label>
           <input
             type="text"
             placeholder="TagOp"
             value={tagop}
             onChange={(e) => setTagop(e.target.value)}
           />
-        </label>
-        <br />
-        <label>
-          From:
+        </div>
+        <div className="form-group">
+          <label>From:</label>
           <input
             type="text"
             placeholder="YYYYMMDD"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
-        </label>
-        <br />
-        <label>
-          To:
+        </div>
+        <div className="form-group">
+          <label>To:</label>
           <input
             type="text"
             placeholder="YYYYMMDD"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />
-        </label>
-        <br />
-        <button type="submit">Submit</button>
+        </div>
+        <div className="button-group">
+          <button type="submit">Submit</button>
+        </div>
       </form>
 
       {error && <div className="error-message"><strong>Error:</strong> {error}</div>}
@@ -74,7 +73,7 @@ function PassesCost() {
       {result && (
         <div className="result-container">
           <h3>Cost Results:</h3>
-          <table>
+          <table className="results-table">
             <thead>
               <tr>
                 <th>Field</th>

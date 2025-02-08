@@ -63,7 +63,9 @@ function PassAnalysis() {
             onChange={(e) => setToDate(e.target.value)}
           />
         </div>
-        <button type="submit">Submit</button>
+        <div className="button-group">
+          <button type="submit">Submit</button>
+        </div>
       </form>
 
       {error && (
@@ -78,9 +80,7 @@ function PassAnalysis() {
           <div className="summary">
             <p><strong>Station Operator:</strong> {result.stationOpID}</p>
             <p><strong>Tag Operator:</strong> {result.tagOpID}</p>
-            <p>
-              <strong>Period:</strong> {result.periodFrom} to {result.periodTo}
-            </p>
+            <p><strong>Period:</strong> {result.periodFrom} to {result.periodTo}</p>
             <p><strong>Number of Passes:</strong> {result.nPasses}</p>
           </div>
           {result.passList && result.passList.length > 0 && (
