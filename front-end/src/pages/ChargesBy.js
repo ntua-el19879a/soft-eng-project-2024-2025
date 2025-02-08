@@ -1,24 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 function ChargesBy() {
 
   const [opid, setOpid] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-
-
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+  // Check authentication and role
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+
+    if (!token || !(role === "admin" || role === "operator")) {
+      // Redirect to login if unauthorized
+      navigate("/");
+    }
+  }, [navigate]);
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     try {
+      const token = sessionStorage.getItem("token");
       const url = `/api/chargesBy/${opid}/${fromDate}/${toDate}`;
-
-
-      const response = await axios.get(url);
+      if (!token) {
+        throw new Error("Authentication token missing. Please log in.");
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setResult(response.data);
       setError(null);
