@@ -1,9 +1,9 @@
 const express = require('express');
 const { getPassesCost } = require('../controllers/passesCostController');
 const router = express.Router();
-//const { authenticateJWT, authorizeRoles } = require('../middlewares/authMiddleware');
+const { authenticateJWT, authorizeRoles } = require('../middlewares/authMiddleware');
 
-//router.use(authenticateJWT, authorizeRoles(['admin', 'operator']));
+router.use(authenticateJWT, authorizeRoles(['admin', 'operator']));
 
 
 // Define the GET route for passesCost
