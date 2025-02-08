@@ -1,83 +1,148 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './ChargesBy.css'; // Import the CSS file for styling
+import { useNavigate } from "react-router-dom";
 
 function ChargesBy() {
-
   const [opid, setOpid] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-
-
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
+  // Friendly names mapping: update these keys as needed to match the API response.
+  const friendlyNames = {
+    opid: "Operator ID",
+    fromDate: "From Date",
+    toDate: "To Date",
+    vOpList: "Visiting Operator List",
+    tollOpID: "Toll Operator ID",
+    requestTimestamp: "Request Date",
+    periodFrom: "From",
+    periodTo: "To",
+    // Add additional mappings as needed.
+  };
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+    if (!token || !(role === "admin" || role === "operator")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     try {
+      const token = sessionStorage.getItem("token");
       const url = `/api/chargesBy/${opid}/${fromDate}/${toDate}`;
-
-
-      const response = await axios.get(url);
-
+      if (!token) {
+        throw new Error("Authentication token missing. Please log in.");
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setResult(response.data);
       setError(null);
     } catch (err) {
       setResult(null);
-      setError(err.message || 'Error during chargesBy request');
+      setError(err.response?.data?.error || err.message || 'Error during chargesBy request');
     }
   };
 
+  // Helper function to render values nicely.
+  const renderValue = (key, value) => {
+    if (key === 'vOpList' && Array.isArray(value)) {
+      return (
+        <table className="inner-table">
+          <thead>
+            <tr>
+              <th>Visiting Operator Tag</th>
+              <th>Number of Passes</th>
+              <th>Passes Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {value.map((item, index) => (
+              <tr key={index}>
+                <td>{item.visitingOpID}</td>
+                <td>{item.nPasses}</td>
+                <td>{item.passesCost}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+    if (typeof value === 'object') {
+      return <pre className="object-pre">{JSON.stringify(value, null, 2)}</pre>;
+    }
+    return value.toString();
+  };
+
   return (
-    <div>
-      <h2>ChargesBy</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Operator ID:
+    <div className="charges-by-container">
+      <h2>Charges By</h2>
+      <form onSubmit={handleSubmit} className="charges-by-form">
+        <div className="form-group">
+          <label>Operator ID:</label>
           <input
             type="text"
-            placeholder='OpID'
+            placeholder="OpID"
             value={opid}
             onChange={(e) => setOpid(e.target.value)}
           />
-        </label>
-        <br />
-
-        <label>
-          From:
+        </div>
+        <div className="form-group">
+          <label>From:</label>
           <input
             type="text"
-            placeholder='YYYYMMDD'
+            placeholder="YYYYMMDD"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
-        </label>
-        <br />
-
-        <label>
-          To:
+        </div>
+        <div className="form-group">
+          <label>To:</label>
           <input
             type="text"
-            placeholder='YYYYMMDD'
+            placeholder="YYYYMMDD"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />
-        </label>
-        <br />
-
+        </div>
         <button type="submit">Submit</button>
       </form>
 
       {error && (
-        <p style={{ color: 'red' }}>
+        <div className="error-message">
           <strong>Error:</strong> {error}
-        </p>
+        </div>
       )}
 
       {result && (
-        <div style={{ marginTop: '1rem' }}>
-          <h3>Αποτελέσματα:</h3>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+        <div className="result-container">
+          <h3>Results:</h3>
+          <table className="results-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(result).map(([key, value]) => (
+                <tr key={key}>
+                  <td>{friendlyNames[key] || key}</td>
+                  <td>{renderValue(key, value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

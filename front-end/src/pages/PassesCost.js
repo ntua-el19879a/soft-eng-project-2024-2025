@@ -1,98 +1,94 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './CommonForm.css'; // Import the common form CSS
 
 function PassesCost() {
-  // React state για τα input fields
-  const [stationop, setstationop] = useState('');
-  const [tagop, settagop] = useState('');
+  const [stationop, setStationop] = useState('');
+  const [tagop, setTagop] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-
-  // React state για το αποτέλεσμα και τα σφάλματα
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  // Συνάρτηση που “τρέχει” όταν πατάς το κουμπί της φόρμας
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Φτιάχνουμε το URL ακριβώς όπως είναι στο back-end:
-      // π.χ. /api/PassesCost/AM/20220101/20220114
       const url = `/api/passesCost/${stationop}/${tagop}/${fromDate}/${toDate}`;
-
-      // Κάνουμε GET αίτημα στο back-end μέσω του proxy
       const response = await axios.get(url);
-
-      // Αποθηκεύουμε το αποτέλεσμα
       setResult(response.data);
       setError(null);
     } catch (err) {
       setResult(null);
-      setError(err.message || 'Error during PassesCost request');
+      setError(err.response?.data?.error || err.message || 'Error during PassesCost request');
     }
   };
 
   return (
-    <div>
-      <h2>PassesCost</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Station Operator:
+    <div className="passes-cost-container">
+      <h2>Passes Cost</h2>
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-group">
+          <label>Station Operator:</label>
           <input
             type="text"
-            placeholder='StationOp'
+            placeholder="StationOp"
             value={stationop}
-            onChange={(e) => setstationop(e.target.value)}
+            onChange={(e) => setStationop(e.target.value)}
           />
-        </label>
-        <br />
-
-        <label>
-          Tag Operator:
+        </div>
+        <div className="form-group">
+          <label>Tag Operator:</label>
           <input
             type="text"
-            placeholder='TagOp'
+            placeholder="TagOp"
             value={tagop}
-            onChange={(e) => settagop(e.target.value)}
+            onChange={(e) => setTagop(e.target.value)}
           />
-        </label>
-        <br />
-
-        <label>
-          From:
+        </div>
+        <div className="form-group">
+          <label>From:</label>
           <input
             type="text"
-            placeholder='YYYYMMDD'
+            placeholder="YYYYMMDD"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
           />
-        </label>
-        <br />
-
-        <label>
-          To:
+        </div>
+        <div className="form-group">
+          <label>To:</label>
           <input
             type="text"
-            placeholder='YYYYMMDD'
+            placeholder="YYYYMMDD"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
           />
-        </label>
-        <br />
-
-        <button type="submit">Submit</button>
+        </div>
+        <div className="button-group">
+          <button type="submit">Submit</button>
+        </div>
       </form>
 
-      {error && (
-        <p style={{ color: 'red' }}>
-          <strong>Error:</strong> {error}
-        </p>
-      )}
+      {error && <div className="error-message"><strong>Error:</strong> {error}</div>}
 
       {result && (
-        <div style={{ marginTop: '1rem' }}>
-          <h3>Αποτελέσματα:</h3>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+        <div className="result-container">
+          <h3>Cost Results:</h3>
+          <table className="results-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(result).map(([key, value]) => (
+                <tr key={key}>
+                  <td>{key}</td>
+                  <td>{value.toString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
