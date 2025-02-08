@@ -7,6 +7,7 @@ import PassesCost from './pages/PassesCost';
 import ChargesBy from './pages/ChargesBy';
 import TollStationPasses from './pages/TollStationPasses';
 import PassAnalysis from './pages/PassAnalysis';
+import HealthCheck from './pages/HealthCheck';
 
 function AdminHomepage() {
   return (
@@ -20,6 +21,7 @@ function AdminHomepage() {
             <li><Link to="/chargesby">Charges By</Link></li>
             <li><Link to="/tollstationpasses">Toll Station Passes</Link></li>
             <li><Link to="/passanalysis">Pass Analysis</Link></li>
+            <li><Link to="/healthcheck">HealthCheck</Link></li>
           </ul>
         </nav>
 
@@ -28,6 +30,7 @@ function AdminHomepage() {
           <Route path="/chargesby" element={<ChargesBy />} />
           <Route path="/tollstationpasses" element={<TollStationPasses />} />
           <Route path="/passanalysis" element={<PassAnalysis />} />
+          <Route path="/healthcheck" element={<HealthCheck />} />
         </Routes>
       </div>
     </Router>
