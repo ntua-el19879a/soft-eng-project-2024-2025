@@ -8,6 +8,8 @@ import HealthCheck from './pages/HealthCheck';
 import ChargesBy from './pages/ChargesBy';
 import TollStationPasses from './pages/TollStationPasses';
 import PassAnalysis from './pages/PassAnalysis';
+import Login from './pages/Login';
+
 
 function App() {
   return (
@@ -26,6 +28,7 @@ function App() {
         </nav>
 
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route path="/passescost" element={<PassesCost />} />
           <Route path="/healthcheck" element={<HealthCheck />} />
           <Route path="/chargesby" element={<ChargesBy />} />
