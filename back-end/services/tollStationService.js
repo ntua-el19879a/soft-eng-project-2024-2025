@@ -4,7 +4,7 @@ const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
 const tollStationsCollection = "tollstations";
-const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
 
@@ -52,7 +52,7 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
       .find({
         tollID: tollStationID.trim(),
         timestamp: {
-          $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+          $gte: formattedDateFrom, $lte: formattedDateTo
         },
       })
       .sort({ timestamp: 1 }) // Sort by timestamp ascending
@@ -69,13 +69,13 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
       stationID: tollStationID,
       stationOperator: operatorName,
       requestTimestamp: currentTimestamp(),
-      periodFrom: formattedDateFrom,
-      periodTo: formattedDateTo,
+      periodFrom: formatTimestamp(formattedDateFrom),
+      periodTo: formatTimestamp(formattedDateTo),
       nPasses: passes.length,
       passList: passes.map((pass, index) => ({
         passIndex: index + 1,
         passID: pass._id,
-        timestamp: pass.timestamp,
+        timestamp: formatTimestamp(pass.timestamp),
         tagID: pass.tagRef,
         tagProvider: pass.tagHomeID,
         passType: pass.tagHomeID === operatorName ? "home" : "away",

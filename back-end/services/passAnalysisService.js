@@ -3,7 +3,7 @@ const { mongoUri } = require('../config/dbConfig');
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = "operators";
-const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
 exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, format) => {
@@ -47,7 +47,7 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, for
                 tollID: { $regex: `^${stationOpID}` },
                 tagHomeID: tagOpID,
                 timestamp: {
-                    $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                    $gte: formattedDateFrom, $lte: formattedDateTo
                 },
             })
             .sort({ timestamp: 1 }) // Sort by timestamp ascending
@@ -62,14 +62,14 @@ exports.getPassAnalysisData = async (stationOpID, tagOpID, dateFrom, dateTo, for
             stationOpID: stationOpID,
             tagOpID: tagOpID,
             requestTimestamp: currentTimestamp(),
-            periodFrom: formattedDateFrom,
-            periodTo: formattedDateTo,
+            periodFrom: formatTimestamp(formattedDateFrom),
+            periodTo: formatTimestamp(formattedDateTo),
             nPasses: passData.length,
             passList: passData.map((pass, index) => ({
                 passIndex: index + 1,
                 passID: pass._id,
                 stationID: pass.tollID,
-                timestamp: pass.timestamp,
+                timestamp: formatTimestamp(pass.timestamp),
                 tagID: pass.tagRef,
                 passCharge: pass.charge,
             }))

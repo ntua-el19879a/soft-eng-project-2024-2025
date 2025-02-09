@@ -4,7 +4,7 @@ const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
 const { parse } = require('json2csv');
-const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
 
 
 exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format = 'json') => {
@@ -54,7 +54,7 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
                 tollID: { $regex: `^${tollOpID}` },
                 tagHomeID: tagOpID,
                 timestamp: {
-                    $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                    $gte: formattedDateFrom, $lte: formattedDateTo
                 },
             })
             .toArray();
@@ -71,8 +71,8 @@ exports.getPassesCostData = async (tollOpID, tagOpID, dateFrom, dateTo, format =
             tollOpID: tollOpID,
             tagOpID: tagOpID,
             requestTimestamp: currentTimestamp(),
-            periodFrom: formattedDateFrom,
-            periodTo: formattedDateTo,
+            periodFrom: formatTimestamp(formattedDateFrom),
+            periodTo: formatTimestamp(formattedDateTo),
             nPasses: passData.length,
             passesCost: parseFloat(totalCost)
         };

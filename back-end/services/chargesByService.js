@@ -3,7 +3,7 @@ const { mongoUri } = require('../config/dbConfig');
 const dbName = 'toll-interop-db';
 const passesCollection = 'passes';
 const operatorsCollection = 'operators';
-const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
 
 
@@ -40,7 +40,7 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo, format) => {
                     $match: {
                         tollID: { $regex: `^${tollOpID}` },
                         timestamp: {
-                            $gte: new Date(formattedDateFrom), $lte: new Date(formattedDateTo)
+                            $gte: formattedDateFrom, $lte: formattedDateTo
                         }
                     }
                 },
@@ -64,8 +64,8 @@ exports.getChargesByData = async (tollOpID, dateFrom, dateTo, format) => {
         const result = {
             tollOpID: tollOpID,
             requestTimestamp: currentTimestamp(),
-            periodFrom: formattedDateFrom,
-            periodTo: formattedDateTo,
+            periodFrom: formatTimestamp(formattedDateFrom),
+            periodTo: formatTimestamp(formattedDateTo),
             vOpList: passData.map(op => ({
                 visitingOpID: op._id,
                 nPasses: op.nPasses,
