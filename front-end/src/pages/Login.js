@@ -21,10 +21,10 @@ function Login() {
             sessionStorage.setItem("role", response.data.role);
 
             if (response.data.role === 'admin') {
-                navigate('/chargesby');
+                navigate('/adminpage');
 
             } else if (response.data.role === 'operator') {
-                navigate('/chargesby');
+                navigate('/operatorpage');
             } else {
                 setError('Unknown role. Contact support.');
             }

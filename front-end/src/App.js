@@ -1,16 +1,16 @@
 import './App.css';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Εισαγωγή όλων των σελίδων
-import PassesCost from './pages/PassesCost';
-import HealthCheck from './pages/HealthCheck';
-import ChargesBy from './pages/ChargesBy';
-import TollStationPasses from './pages/TollStationPasses';
-import PassAnalysis from './pages/PassAnalysis';
+import PassesCost from './pages/AdminPages/PassesCost';
+import HealthCheck from './pages/AdminPages/HealthCheck';
+import ChargesBy from './pages/AdminPages/ChargesBy';
+import TollStationPasses from './pages/AdminPages/TollStationPasses';
+import PassAnalysis from './pages/AdminPages/PassAnalysis';
 import Login from './pages/Login';
-import Admin from './AdminHomepage';
-import Operator from './OperatorHomepage';
+import Admin from './pages/AdminPages/AdminHomepage';
+import Operator from './pages/OperatorPages/OperatorHomepage';
 
 
 function App() {
@@ -18,19 +18,10 @@ function App() {
     <Router>
       <div className="App">
         <h1>Highway Interoperability System</h1>
-
-        <nav>
-          <ul>
-            <li><Link to="/passescost">Passes Cost</Link></li>
-            <li><Link to="/chargesby">Charges By</Link></li>
-            <li><Link to="/tollstationpasses">Toll Station Passes</Link></li>
-            <li><Link to="/passanalysis">Pass Analysis</Link></li>
-            <li><Link to="/healthcheck">Health Check</Link></li>
-          </ul>
-        </nav>
-
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/adminpage/*" element={<Admin />} />
+          <Route path="/operatorpage/*" element={<Operator />} />
           <Route path="/passescost" element={<PassesCost />} />
           <Route path="/healthcheck" element={<HealthCheck />} />
           <Route path="/chargesby" element={<ChargesBy />} />

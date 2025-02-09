@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './CommonForm.css'; // Import the common form CSS
+import '../../components/AdminComponents/TollStationPasses.css'; // Import the common form CSS
+import { useNavigate } from "react-router-dom";
 
 function TollStationPasses() {
   const [station, setStation] = useState('');
@@ -8,12 +9,29 @@ function TollStationPasses() {
   const [toDate, setToDate] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+    if (!token || !(role === "admin" || role === "operator")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const url = `/api/tollStationPasses/${station}/${fromDate}/${toDate}`;
-      const response = await axios.get(url);
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token missing. Please log in.");
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setResult(response.data);
       setError(null);
     } catch (err) {

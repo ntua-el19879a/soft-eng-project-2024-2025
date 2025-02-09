@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './ChargesBy.css'; // Import the CSS file for styling
+import '../../components/CommonForm.css'; // Import the common form CSS
 import { useNavigate } from "react-router-dom";
 
-function ChargesBy() {
-  const [opid, setOpid] = useState('');
+function PassesCost() {
+  const [stationop, setStationop] = useState('');
+  const [tagop, setTagop] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  // Friendly names mapping: update these keys as needed to match the API response.
-  const friendlyNames = {
-    opid: "Operator ID",
-    fromDate: "From Date",
-    toDate: "To Date",
-    vOpList: "Visiting Operator List",
-    tollOpID: "Toll Operator ID",
-    requestTimestamp: "Request Date",
-    periodFrom: "From",
-    periodTo: "To",
-    // Add additional mappings as needed.
-  };
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,10 +23,9 @@ function ChargesBy() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     try {
+      const url = `/api/passesCost/${stationop}/${tagop}/${fromDate}/${toDate}`;
       const token = sessionStorage.getItem("token");
-      const url = `/api/chargesBy/${opid}/${fromDate}/${toDate}`;
       if (!token) {
         throw new Error("Authentication token missing. Please log in.");
       }
@@ -50,51 +38,30 @@ function ChargesBy() {
       setError(null);
     } catch (err) {
       setResult(null);
-      setError(err.response?.data?.error || err.message || 'Error during chargesBy request');
+      setError(err.response?.data?.error || err.message || 'Error during PassesCost request');
     }
-  };
-
-  // Helper function to render values nicely.
-  const renderValue = (key, value) => {
-    if (key === 'vOpList' && Array.isArray(value)) {
-      return (
-        <table className="inner-table">
-          <thead>
-            <tr>
-              <th>Visiting Operator Tag</th>
-              <th>Number of Passes</th>
-              <th>Passes Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {value.map((item, index) => (
-              <tr key={index}>
-                <td>{item.visitingOpID}</td>
-                <td>{item.nPasses}</td>
-                <td>{item.passesCost}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
-    }
-    if (typeof value === 'object') {
-      return <pre className="object-pre">{JSON.stringify(value, null, 2)}</pre>;
-    }
-    return value.toString();
   };
 
   return (
-    <div className="charges-by-container">
-      <h2>Charges By</h2>
-      <form onSubmit={handleSubmit} className="charges-by-form">
+    <div className="passes-cost-container">
+      <h2>Passes Cost</h2>
+      <form onSubmit={handleSubmit} className="form-container">
         <div className="form-group">
-          <label>Operator ID:</label>
+          <label>Station Operator:</label>
           <input
             type="text"
-            placeholder="OpID"
-            value={opid}
-            onChange={(e) => setOpid(e.target.value)}
+            placeholder="StationOp"
+            value={stationop}
+            onChange={(e) => setStationop(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>Tag Operator:</label>
+          <input
+            type="text"
+            placeholder="TagOp"
+            value={tagop}
+            onChange={(e) => setTagop(e.target.value)}
           />
         </div>
         <div className="form-group">
@@ -115,18 +82,16 @@ function ChargesBy() {
             onChange={(e) => setToDate(e.target.value)}
           />
         </div>
-        <button type="submit">Submit</button>
+        <div className="button-group">
+          <button type="submit">Submit</button>
+        </div>
       </form>
 
-      {error && (
-        <div className="error-message">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
+      {error && <div className="error-message"><strong>Error:</strong> {error}</div>}
 
       {result && (
         <div className="result-container">
-          <h3>Results:</h3>
+          <h3>Cost Results:</h3>
           <table className="results-table">
             <thead>
               <tr>
@@ -137,8 +102,8 @@ function ChargesBy() {
             <tbody>
               {Object.entries(result).map(([key, value]) => (
                 <tr key={key}>
-                  <td>{friendlyNames[key] || key}</td>
-                  <td>{renderValue(key, value)}</td>
+                  <td>{key}</td>
+                  <td>{value.toString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -149,4 +114,4 @@ function ChargesBy() {
   );
 }
 
-export default ChargesBy;
+export default PassesCost;

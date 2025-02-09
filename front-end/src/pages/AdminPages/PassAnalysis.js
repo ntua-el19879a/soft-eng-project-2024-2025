@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './PassAnalysis.css';
+import '../../components/AdminComponents/PassAnalysis.css';
+import { useNavigate } from "react-router-dom";
+
 
 function PassAnalysis() {
   const [stationOp, setStationOp] = useState('');
@@ -10,11 +12,29 @@ function PassAnalysis() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+    if (!token || !(role === "admin" || role === "operator")) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token missing. Please log in.");
+      }
       const url = `/api/passAnalysis/${stationOp}/${tagOp}/${fromDate}/${toDate}`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setResult(response.data);
       setError(null);
     } catch (err) {
