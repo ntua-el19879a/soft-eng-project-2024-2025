@@ -15,6 +15,7 @@ import UsersList from './pages/AdminPages/UsersList';
 import ResetStations from './pages/AdminPages/ResetStations';
 import AddPasses from './pages/AdminPages/AddPasses';
 import ResetPasses from './pages/AdminPages/ResetPasses';
+import UserManagement from './pages/AdminPages/UserManagement';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/resetpasses" element={<ResetPasses />} />
           <Route path="/addpasses" element={<AddPasses />} />
           <Route path="/users" element={<UsersList />} />
+          <Route path="/usermanagement" element={<UserManagement />} />
           <Route path="/chargesby" element={<ChargesBy />} />
           <Route path="/tollstationpasses" element={<TollStationPasses />} />
           <Route path="/passanalysis" element={<PassAnalysis />} />
