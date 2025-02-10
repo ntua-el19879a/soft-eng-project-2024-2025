@@ -3,6 +3,8 @@ import axios from 'axios';
 import '../../components/AdminComponents/ResetStations.css'; // Optional CSS for styling
 import { useNavigate, Link } from 'react-router-dom';
 import Papa from 'papaparse'; // For CSV parsing in browser
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+
 
 function ResetStations() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -78,6 +80,7 @@ function ResetStations() {
 
     return (
         <div className="reset-stations-container">
+            <SessionExpiredBanner />
             <h2>Reset Toll Stations</h2>
 
             <div className="upload-section">

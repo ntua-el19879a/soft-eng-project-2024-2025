@@ -43,6 +43,8 @@ function AdminHomepage() {
   return (
     <div className="App">
       <h1>Admin Dashboard</h1>
+      <SessionExpiredBanner />
+
 
       <nav className="admin-nav">
         <ul className="nav-list">
@@ -80,7 +82,6 @@ function AdminHomepage() {
           </li>
         </ul>
       </nav>
-      <SessionExpiredBanner />
 
       <div className="logout-container">
         <LogoutButton />

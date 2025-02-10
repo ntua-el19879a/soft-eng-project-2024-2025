@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/ChargesBy.css'; // Adjust the path as needed
 import { useNavigate, Link } from "react-router-dom";
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 
 function ChargesBy() {
   const [opid, setOpid] = useState('');
@@ -86,6 +87,7 @@ function ChargesBy() {
 
   return (
     <div className="charges-by-container">
+      <SessionExpiredBanner />
       <h2>Charges By</h2>
       <form onSubmit={handleSubmit} className="charges-by-form">
         <div className="form-group">

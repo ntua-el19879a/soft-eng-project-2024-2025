@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/UsersList.css'; // Optional CSS for styling
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 import { useNavigate, Link } from 'react-router-dom';
 
 function UsersList() {
@@ -77,6 +78,7 @@ function UsersList() {
     if (error) {
         return (
             <div className="users-list-container error">
+                <SessionExpiredBanner />
                 <h2>User List</h2>
                 <div className="error-message">
                     <strong>Error:</strong> {error}

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/ResetPasses.css'; // Optional CSS for styling
 import { useNavigate, Link } from 'react-router-dom';
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+
 
 function ResetPasses() {
     const [loading, setLoading] = useState(false);
@@ -47,6 +49,7 @@ function ResetPasses() {
 
     return (
         <div className="reset-passes-container">
+            <SessionExpiredBanner />
             <h2>Reset All Passes and Data</h2>
             <p>
                 This action will delete all pass records, tags, user accounts (except admin), and refresh tokens from the system.

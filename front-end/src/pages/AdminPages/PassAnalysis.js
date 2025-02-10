@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../../components/AdminComponents/PassAnalysis.css';
 import { useNavigate, Link } from "react-router-dom";
 
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 
 function PassAnalysis() {
   const [stationOp, setStationOp] = useState('');
@@ -45,6 +46,7 @@ function PassAnalysis() {
 
   return (
     <div className="pass-analysis-container">
+      <SessionExpiredBanner />
       <h2>Pass Analysis</h2>
       <form onSubmit={handleSubmit} className="pass-analysis-form">
         <div className="form-group">

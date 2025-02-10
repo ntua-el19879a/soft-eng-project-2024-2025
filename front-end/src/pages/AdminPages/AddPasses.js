@@ -3,6 +3,8 @@ import axios from 'axios';
 import '../../components/AdminComponents/AddPasses.css'; // Optional CSS for styling
 import { useNavigate, Link } from 'react-router-dom';
 import Papa from 'papaparse'; // For CSV parsing in browser
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+
 
 function AddPasses() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -68,6 +70,7 @@ function AddPasses() {
 
     return (
         <div className="add-passes-container">
+            <SessionExpiredBanner />
             <h2>Add Passes</h2>
 
             <div className="upload-section">

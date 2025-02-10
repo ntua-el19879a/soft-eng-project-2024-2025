@@ -3,6 +3,19 @@ import axios from 'axios';
 import '../components/CommonForm.css'; // Import the common form CSS
 import { useNavigate } from 'react-router-dom';
 
+function getTokenExpiration(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(base64));
+        const exp = payload.exp * 1000; // Convert to milliseconds
+        return exp;
+    } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+    }
+}
+
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -16,8 +29,9 @@ function Login() {
         try {
             const url = `/api/auth/login`;
             const response = await axios.post(url, { username, password });
+            const accessToken = response.data.accessToken;
 
-            sessionStorage.setItem("token", response.data.accessToken);
+            sessionStorage.setItem("token", accessToken);
             sessionStorage.setItem("refreshToken", response.data.refreshToken);
             sessionStorage.setItem("role", response.data.role);
 
@@ -27,6 +41,10 @@ function Login() {
                 navigate('/operatorpage');
             } else {
                 setError('Unknown role. Contact support.');
+            }
+            const expTime = getTokenExpiration(accessToken);
+            if (expTime) {
+                sessionStorage.setItem("expTime", expTime.toString());
             }
         } catch (err) {
             setError(err.response?.data?.error || 'Login failed');

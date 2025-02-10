@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Or your apiClient.js if you implemented refresh tokens
 import '../../components/AdminComponents/HealthCheck.css'; // Optional: CSS for styling
 import { useNavigate, Link } from 'react-router-dom';
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 
 function HealthCheck() {
   const [healthData, setHealthData] = useState(null);
@@ -46,6 +47,7 @@ function HealthCheck() {
   if (error) {
     return (
       <div className="health-check-container error">
+        <SessionExpiredBanner />
         <h2>System Health Check</h2>
         <div className="error-message">
           <strong>Error:</strong> {error}
@@ -56,6 +58,7 @@ function HealthCheck() {
 
   return (
     <div className="health-check-container">
+      <SessionExpiredBanner />
       <h2>System Health Check</h2>
       <div className="health-check-card">
         {healthData && ( // Conditionally render health data to avoid errors if it's null

@@ -1,38 +1,43 @@
 // src/components/SessionExpiredBanner.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SessionExpiredBanner.css';
 
 function SessionExpiredBanner() {
 	const navigate = useNavigate();
+	const [isExpired, setIsExpired] = useState(false);
 	const token = sessionStorage.getItem("token");
 
-	// A simple function to decode a JWT and check expiration
-	const isTokenExpired = (token) => {
-		if (!token) return true;
+	const checkExpiration = () => {
+		const token = sessionStorage.getItem("token");
+		if (!token) {
+			setIsExpired(true);
+			return;
+		}
+
 		try {
-			// Decode the JWT payload (assumes it's a base64 encoded JSON)
 			const payload = JSON.parse(atob(token.split('.')[1]));
-			const exp = payload.exp; // expiration time (in seconds since epoch)
-			const now = Date.now() / 1000; // current time in seconds
-			return exp < now;
+			const expTime = payload.exp * 1000; // Convert to milliseconds
+			const now = Date.now();
+			setIsExpired(now > expTime);
 		} catch (e) {
-			// If an error occurs during decoding, assume token is invalid/expired.
-			return true;
+			setIsExpired(true);
 		}
 	};
-
-	if (!isTokenExpired(token)) {
-		return null; // Token is still valid; no banner needed.
-	}
+	// Check every 30 seconds
+	useEffect(() => {
+		checkExpiration();
+		const interval = setInterval(checkExpiration, 30000);
+		return () => clearInterval(interval);
+	}, []);
 
 	const handleClick = () => {
-		// Clear authentication data and redirect to login
-		sessionStorage.removeItem("token");
-		sessionStorage.removeItem("refreshToken");
-		sessionStorage.removeItem("role");
+		sessionStorage.clear();
 		navigate("/");
+		window.location.reload(); // Ensure fresh state
 	};
+
+	if (!isExpired) return null;
 
 	return (
 		<div className="session-expired-banner">
@@ -41,5 +46,6 @@ function SessionExpiredBanner() {
 		</div>
 	);
 }
-
+// A simple function to decode a JWT and check expiration
+// 
 export default SessionExpiredBanner;

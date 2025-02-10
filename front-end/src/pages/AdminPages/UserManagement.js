@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../../components/AdminComponents/UserManagement.css'; // Optional CSS for styling
 import { useNavigate, Link } from 'react-router-dom';
 
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 function UserManagement() {
     const [modifyUsername, setModifyUsername] = useState('');
     const [modifyPassword, setModifyPassword] = useState('');
@@ -68,6 +69,7 @@ function UserManagement() {
 
     return (
         <div className="user-management-container">
+            <SessionExpiredBanner />
             <h2>User Management</h2>
 
             <div className="user-management-forms">

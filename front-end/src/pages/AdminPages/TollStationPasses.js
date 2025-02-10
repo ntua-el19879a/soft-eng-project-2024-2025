@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/TollStationPasses.css'; // Import the common form CSS
 import { useNavigate, Link } from "react-router-dom";
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+
 
 function TollStationPasses() {
   const [station, setStation] = useState('');
@@ -42,6 +44,7 @@ function TollStationPasses() {
 
   return (
     <div className="toll-station-passes-container">
+      <SessionExpiredBanner />
       <h2>Toll Station Passes</h2>
       <form onSubmit={handleSubmit} className="form-container">
         <div className="form-group">
