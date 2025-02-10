@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Or your apiClient.js if you implemented refresh tokens
 import '../../components/AdminComponents/HealthCheck.css'; // Optional: CSS for styling
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function HealthCheck() {
   const [healthData, setHealthData] = useState(null);
@@ -14,7 +14,7 @@ function HealthCheck() {
     const role = sessionStorage.getItem("role");
 
     // Authentication Check: Redirect if no token or unauthorized role
-    if (!token || !(role === "admin" || role === "operator")) {
+    if (!token || !role === "admin") {
       navigate("/"); // Redirect to login page
       return; // Important: Exit the useEffect to prevent further execution
     }
@@ -86,6 +86,9 @@ function HealthCheck() {
             </div>
           </>
         )}
+      </div>
+      <div className="back-to-admin-button-container">
+        <Link to="/adminpage" className="back-to-admin-button">Back to Admin Dashboard</Link>
       </div>
     </div>
   );

@@ -113,28 +113,95 @@ button:hover {
   margin-bottom: 2rem;
 }
 
-nav ul {
-  list-style-type: none;
+/*  ✅✅✅  SIMPLE NAVIGATION BAR STYLE (FOR BOTH ADMIN & OPERATOR) ✅✅✅ */
+
+.admin-nav, .operator-nav { /* Apply to both admin-nav and operator-nav */
+  background-color: #f0f0f0; /* Light grey background */
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc; /* Bottom border line */
+  text-align: center; /* Center the navigation links */
+}
+
+.nav-list { /* nav-list is shared by both */
+  list-style: none;
   padding: 0;
+  margin: 0;
   display: flex;
-  gap: 15px;
-  background-color: royalblue;
-  padding: 10px;
-  border-radius: 5px;
+  justify-content: center; /* Center items horizontally within the bar */
+  gap: 30px; /* Spacing between navigation links */
 }
 
-nav ul li {
-  display: inline;
+.nav-item { /* nav-item is shared by both */
+  margin: 0; /* Remove any margins on nav-item */
+  position: relative; /* For dropdown positioning if needed (for Admin) */
+  cursor: pointer;
 }
 
-nav ul li a {
+.nav-item a, .nav-item > span { /* Style links and spans in nav-item */
+    display: block; /* Make them block level for padding to work */
+    padding: 8px 15px; /* Add padding around links */
+    text-decoration: none; /* Remove underlines */
+    color: #333; /* Dark grey text color */
+}
+
+.nav-item:hover > a, .nav-item:hover > span { /* Hover effect */
+    color: #555; /* Slightly lighter grey on hover */
+}
+
+
+.dropdown { /* dropdown styles remain the same for Admin dropdowns */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-top: none;
+  z-index: 10;
+  display: none;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+.nav-item:hover > .dropdown,
+.nav-item.active > .dropdown {
+  display: block;
+}
+
+
+.dropdown li a {
+  padding: 10px 20px;
+  width: 100%;
+  display: block;
+  color: #333;
   text-decoration: none;
-  color: white;
-  font-weight: bold;
-  padding: 8px 12px;
-  border-radius: 4px;
+  white-space: nowrap;
 }
 
-nav ul li a:hover {
+.dropdown li:hover > a {
+  background-color: #f0f0f0;
+}
+
+
+/* General "Back to Admin Dashboard" Button Styles - No change needed here */
+.back-to-admin-button-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.back-to-admin-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.back-to-admin-button:hover {
   background-color: #0056b3;
 }

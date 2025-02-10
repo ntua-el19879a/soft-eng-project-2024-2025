@@ -11,7 +11,10 @@ import PassAnalysis from './pages/AdminPages/PassAnalysis';
 import Login from './pages/Login';
 import Admin from './pages/AdminPages/AdminHomepage';
 import Operator from './pages/OperatorPages/OperatorHomepage';
-
+import UsersList from './pages/AdminPages/UsersList';
+import ResetStations from './pages/AdminPages/ResetStations';
+import AddPasses from './pages/AdminPages/AddPasses';
+import ResetPasses from './pages/AdminPages/ResetPasses';
 
 function App() {
   return (
@@ -24,6 +27,10 @@ function App() {
           <Route path="/operatorpage/*" element={<Operator />} />
           <Route path="/passescost" element={<PassesCost />} />
           <Route path="/healthcheck" element={<HealthCheck />} />
+          <Route path="/resetstations" element={<ResetStations />} />
+          <Route path="/resetpasses" element={<ResetPasses />} />
+          <Route path="/addpasses" element={<AddPasses />} />
+          <Route path="/users" element={<UsersList />} />
           <Route path="/chargesby" element={<ChargesBy />} />
           <Route path="/tollstationpasses" element={<TollStationPasses />} />
           <Route path="/passanalysis" element={<PassAnalysis />} />

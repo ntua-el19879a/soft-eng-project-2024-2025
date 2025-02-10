@@ -1,21 +1,25 @@
-import '../../App.css'
+import '../../App.css';
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 
-// Εισαγωγή όλων των admin σελίδων
+// Εισαγωγή όλων των operator σελίδων
 import OperatorStatistics from './OperatorStatistics';
 import OperatorFinancials from './OperatorFinancials';
 
-
 function OperatorHomepage() {
+
   return (
     <div className="App">
       <h1>Operator Dashboard</h1>
 
-      <nav>
-        <ul>
-          <li><Link to="/OperatorStatistics">Statistics</Link></li>
-          <li><Link to="/OperatorFinancials">Financials</Link></li>
+      <nav className="operator-nav"> {/* ✅ Use operator-nav class for Operator styles */}
+        <ul className="nav-list"> {/* Keep nav-list for horizontal layout if needed */}
+          <li className="nav-item"> {/* Keep nav-item for consistent list item styling */}
+            <Link to="/OperatorFinancials">Finance</Link> {/* ✅ Finance Link - direct link, no span */}
+          </li>
+          <li className="nav-item"> {/* Keep nav-item for consistent list item styling */}
+            <Link to="/OperatorStatistics">Statistics</Link> {/* ✅ Statistics Link - direct link, no span */}
+          </li>
         </ul>
       </nav>
 
