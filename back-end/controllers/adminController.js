@@ -50,7 +50,7 @@ module.exports = {
                 if (error.status === 400) {
                     res.status(400).json({ error: error.message });
                 } else {
-                    res.status(500).json({ error: "Internal Server Error" });
+                    res.status(500).json({ error: error.message || "Internal Server Error" });
                 }
             }
         }

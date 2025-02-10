@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/TollStationPasses.css'; // Import the common form CSS
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function TollStationPasses() {
   const [station, setStation] = useState('');
@@ -75,6 +75,11 @@ function TollStationPasses() {
           <button type="submit">Submit</button>
         </div>
       </form>
+      <div className="back-button">
+        <Link to="/adminpage">
+          <button type="button">Back to Dashboard</button>
+        </Link>
+      </div>
 
       {error && <div className="error-message"><strong>Error:</strong> {error}</div>}
 

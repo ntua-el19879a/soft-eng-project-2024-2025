@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../../components/AdminComponents/PassAnalysis.css';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 
 function PassAnalysis() {
@@ -87,6 +87,11 @@ function PassAnalysis() {
           <button type="submit">Submit</button>
         </div>
       </form>
+      <div className="back-button">
+        <Link to="/adminpage">
+          <button type="button">Back to Dashboard</button>
+        </Link>
+      </div>
 
       {error && (
         <div className="error-message">

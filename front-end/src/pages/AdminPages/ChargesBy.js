@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../../components/AdminComponents/ChargesBy.css';
-import { useNavigate } from "react-router-dom";
+import '../../components/AdminComponents/ChargesBy.css'; // Adjust the path as needed
+import { useNavigate, Link } from "react-router-dom";
 
 function ChargesBy() {
   const [opid, setOpid] = useState('');
@@ -9,6 +9,7 @@ function ChargesBy() {
   const [toDate, setToDate] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Friendly names mapping: update these keys as needed to match the API response.
   const friendlyNames = {
@@ -22,7 +23,6 @@ function ChargesBy() {
     periodTo: "To",
     // Add additional mappings as needed.
   };
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -117,6 +117,11 @@ function ChargesBy() {
         </div>
         <button type="submit">Submit</button>
       </form>
+      <div className="back-button">
+        <Link to="/adminpage">
+          <button type="button">Back to Dashboard</button>
+        </Link>
+      </div>
 
       {error && (
         <div className="error-message">
@@ -143,6 +148,8 @@ function ChargesBy() {
               ))}
             </tbody>
           </table>
+          {/* Back to Dashboard button */}
+
         </div>
       )}
     </div>

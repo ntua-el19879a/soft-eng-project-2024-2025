@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import '../components/CommonForm.css'; // Import the common form CSS
 import { useNavigate } from 'react-router-dom';
+
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -12,7 +14,6 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-
             const url = `/api/auth/login`;
             const response = await axios.post(url, { username, password });
 
@@ -22,7 +23,6 @@ function Login() {
 
             if (response.data.role === 'admin') {
                 navigate('/adminpage');
-
             } else if (response.data.role === 'operator') {
                 navigate('/operatorpage');
             } else {
@@ -34,36 +34,33 @@ function Login() {
     };
 
     return (
-        <div>
+        <div className="login-container">
             <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Username:
+            <form onSubmit={handleSubmit} className="form-container">
+                <div className="form-group">
+                    <label htmlFor="username">Username:</label>
                     <input
                         type="text"
                         placeholder="Enter username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
-                </label>
-                <br />
-
-                <label>
-                    Password:
+                </div>
+                <div className="form-group">
+                    <label htmlFor="password"> Password:</label>
                     <input
                         type="password"
                         placeholder="Enter password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                </label>
-                <br />
-
-                <button type="submit">Login</button>
+                </div>
+                <div className="button-group">
+                    <button type="submit">Login</button>
+                </div>
             </form>
-
             {error && (
-                <p style={{ color: 'red' }}>
+                <p className="error-message">
                     <strong>Error:</strong> {error}
                 </p>
             )}

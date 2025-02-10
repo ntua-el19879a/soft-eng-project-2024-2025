@@ -13,6 +13,9 @@ import UsersList from '../AdminPages/UsersList';
 import ResetStations from './ResetStations';
 import AddPasses from './AddPasses';
 import ResetPasses from './ResetPasses';
+import LogoutButton from '../../components/AdminComponents/LogoutButton';
+import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+
 
 function AdminHomepage() {
   const [advancedSearchDropdownOpen, setAdvancedSearchDropdownOpen] = useState(false);
@@ -77,6 +80,12 @@ function AdminHomepage() {
           </li>
         </ul>
       </nav>
+      <SessionExpiredBanner />
+
+      <div className="logout-container">
+        <LogoutButton />
+      </div>
+
 
       {/* ✅ Only use <Routes> without <Router> */}
       <Routes>

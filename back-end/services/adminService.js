@@ -62,10 +62,28 @@ module.exports = {
             const stations = [];
             // Use a Map keyed on the original field "OpID"
             const operators = new Map();
-
+            const requiredStationColumns = [
+                'OpID', 'Operator', 'TollID', 'Name', 'PM',
+                'Locality', 'Road', 'Lat', 'Long', 'Email',
+                'Price1', 'Price2', 'Price3', 'Price4'
+            ];
+            let headersValidated = false;
             await new Promise((resolve, reject) => {
-                fs.createReadStream(filePath)
+                const stream = fs.createReadStream(filePath)
                     .pipe(csv())
+                    .on('headers', (headers) => {
+                        // Check that every expected header exists in the file's headers
+                        const cleanHeaders = headers.map(h => h.replace(/^\uFEFF/, '').trim());
+                        const missingColumns = requiredStationColumns.filter(col =>
+                            !cleanHeaders.includes(col)
+                        );
+
+                        if (missingColumns.length > 0) {
+                            stream.destroy(); // Stop further processing of the stream.
+                            return reject(new Error(`Invalid CSV format. Missing columns: ${missingColumns.join(', ')}`));
+                        }
+                        headersValidated = true;
+                    })
                     .on('data', (row) => {
                         // Trim values and parse numerical fields
 
@@ -76,20 +94,39 @@ module.exports = {
                                 return [cleanKey, (typeof value === 'string') ? value.trim() : value];
                             })
                         );
+
+                        // Check required fields
+                        const requiredFields = [
+                            'OpID', 'Operator', 'TollID', 'Lat', 'Long',
+                            'Price1', 'Price2', 'Price3', 'Price4'
+                        ];
+                        const missingFields = requiredFields.filter(field => !trimmedRow[field]);
+                        if (missingFields.length > 0) {
+                            throw new Error(
+                                `Missing required fields in row: ${missingFields.join(', ')}`
+                            );
+                        }
+                        const numericFields = ['Lat', 'Long', 'Price1', 'Price2', 'Price3', 'Price4'];
+                        for (const field of numericFields) {
+                            if (isNaN(parseFloat(row[field]))) {
+                                throw new Error(`Invalid numeric value in ${field}: ${row[field]}`);
+                            }
+                        }
+
                         const opID = trimmedRow.OpID;
-                        const operatorName = row.Operator ? row.Operator.trim() : '';
-                        const tollID = row.TollID ? row.TollID.trim() : '';
-                        const name = row.Name ? row.Name.trim() : '';
-                        const pm = row.PM ? row.PM.trim() : '';
-                        const locality = row.Locality ? row.Locality.trim() : '';
-                        const road = row.Road ? row.Road.trim() : '';
-                        const lat = parseFloat(row.Lat);
-                        const long = parseFloat(row.Long);
-                        const email = row.Email ? row.Email.trim() : '';
-                        const price1 = parseFloat(row.Price1);
-                        const price2 = parseFloat(row.Price2);
-                        const price3 = parseFloat(row.Price3);
-                        const price4 = parseFloat(row.Price4);
+                        const operatorName = trimmedRow.Operator || '';
+                        const tollID = trimmedRow.TollID || '';
+                        const name = trimmedRow.Name || '';
+                        const pm = trimmedRow.PM || '';
+                        const locality = trimmedRow.Locality || '';
+                        const road = trimmedRow.Road || '';
+                        const lat = parseFloat(trimmedRow.Lat);
+                        const long = parseFloat(trimmedRow.Long);
+                        const email = trimmedRow.Email || '';
+                        const price1 = parseFloat(trimmedRow.Price1);
+                        const price2 = parseFloat(trimmedRow.Price2);
+                        const price3 = parseFloat(trimmedRow.Price3);
+                        const price4 = parseFloat(trimmedRow.Price4);
 
                         // Store the station with the original "OpID" field
                         stations.push({
