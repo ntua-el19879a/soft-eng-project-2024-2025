@@ -21,6 +21,17 @@ function TollStationPasses() {
     }
   }, [navigate]);
 
+  const formatDateTime = (utcString) => {
+    const date = new Date(utcString + 'Z'); // Force UTC interpretation
+    return date.toLocaleString('en-GB', {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -107,7 +118,7 @@ function TollStationPasses() {
                   <tr key={pass.passID}>
                     <td>{pass.passIndex}.</td>
                     <td>{pass.passID}</td>
-                    <td>{pass.timestamp}</td>
+                    <td>{formatDateTime(pass.timestamp)}</td>
                     <td>{pass.tagID}</td>
                     <td>{pass.tagProvider}</td>
                     <td>{pass.passType}</td>
