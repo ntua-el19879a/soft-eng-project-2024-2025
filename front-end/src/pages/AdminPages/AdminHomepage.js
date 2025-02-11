@@ -15,7 +15,7 @@ import AddPasses from './AddPasses';
 import ResetPasses from './ResetPasses';
 import LogoutButton from '../../components/AdminComponents/LogoutButton';
 import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
-
+import TollStatsChartPage from './TollStatsChartPage';
 
 function AdminHomepage() {
   const [advancedSearchDropdownOpen, setAdvancedSearchDropdownOpen] = useState(false);
@@ -76,7 +76,7 @@ function AdminHomepage() {
             {statisticsDropdownOpen && (
               <ul className="dropdown">
                 {/* Placeholder for future Statistics options */}
-                <li><Link to="#">Coming Soon</Link></li>
+                <li><Link to="/tollstatschartpie">Toll Stats</Link></li>
               </ul>
             )}
           </li>
@@ -99,6 +99,7 @@ function AdminHomepage() {
         <Route path="/admin/resetstations" element={<ResetStations />} />
         <Route path="/admin/resetpasses" element={<ResetPasses />} />
         <Route path="/admin/addpasses" element={<AddPasses />} />
+        <Route path='/tollstatschartpie' element={<TollStatsChartPage />} />
       </Routes>
     </div>
   );

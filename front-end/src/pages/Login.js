@@ -34,6 +34,7 @@ function Login() {
             sessionStorage.setItem("token", accessToken);
             sessionStorage.setItem("refreshToken", response.data.refreshToken);
             sessionStorage.setItem("role", response.data.role);
+            sessionStorage.setItem("username", username);
 
             if (response.data.role === 'admin') {
                 navigate('/adminpage');
