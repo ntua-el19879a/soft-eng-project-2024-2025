@@ -78,7 +78,7 @@ exports.getOperatorFinancialsData = async (operatorID, dateFrom, dateTo, format 
         }
 
         if (financials.length === 0) {
-            return null; // No content
+            return []; // No content
         }
 
         if (format === 'csv') {
@@ -94,7 +94,6 @@ exports.getOperatorFinancialsData = async (operatorID, dateFrom, dateTo, format 
         return financials;
 
     } catch (error) {
-        console.error("Error in getOperatorFinancialsData:", error);
         if (error.status === 400) {
             throw error;
         }

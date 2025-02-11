@@ -246,7 +246,6 @@ module.exports = {
                             // Parse timestamp and validate charge
                             const m = moment(row.timestamp, 'YYYY-MM-DD HH:mm', 'EET', true);
                             if (!m.isValid()) {
-                                console.error(`Invalid timestamp encountered: "${row.timestamp}"`);
                                 throw new Error(`Invalid timestamp format: ${row.timestamp}`);
                             }
 

@@ -34,6 +34,15 @@ app.post('/logout', (req, res) => {
     res.redirect(307, '/api/auth/logout');
 });
 
+app.post('/admin/addpasses', (req, res) => {
+    // 307 status code preserves POST method during redirect
+    res.redirect(307, '/api/admin/addpasses');
+});
+
+app.post('/admin/healthcheck', (req, res) => {
+    // 307 status code preserves POST method during redirect
+    res.redirect(307, '/api/admin/healthcheck');
+});
 
 // Auth 
 app.use('/api/auth', authRoute); // Login/logout
@@ -44,6 +53,21 @@ app.use('/api/admin', adminRoutes);
 app.get('/tollStationPasses/*', (req, res) => {
     const pathSegments = req.params[0];
     res.redirect(301, `/api/tollStationPasses/${pathSegments}`);
+});
+
+app.get('/passAnalysis/*', (req, res) => {
+    const pathSegments = req.params[0];
+    res.redirect(301, `/api/passAnalysis/${pathSegments}`);
+});
+
+app.get('/passesCost/*', (req, res) => {
+    const pathSegments = req.params[0];
+    res.redirect(301, `/api/passesCost/${pathSegments}`);
+});
+
+app.get('/chargesBy/*', (req, res) => {
+    const pathSegments = req.params[0];
+    res.redirect(301, `/api/chargesBy/${pathSegments}`);
 });
 // Mount the route
 app.use('/api/tollStationPasses', tollStationRoute);

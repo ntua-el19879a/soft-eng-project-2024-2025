@@ -23,7 +23,7 @@ exports.getOperatorFinancials = async (req, res, next) => {
         const result = await getOperatorFinancialsData(operatorID, date_from, date_to, format);
 
         if (!result || result.length === 0) {
-            return res.status(204).send(); // No content
+            return res.status(200).json({ message: "No passes for that period", financials: [] });
         }
 
         if (format === 'csv') {
