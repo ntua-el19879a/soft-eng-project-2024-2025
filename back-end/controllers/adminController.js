@@ -146,17 +146,17 @@ module.exports = {
         }
     },
 
-    // getOperators: async (req, res) => {
-    //     try {
-    //         const result = await adminService.getOperators();
-    //         res.status(200).json(result);
-    //     } catch (error) {
-    //         console.error("Error in adminController.getOperators:", error); // Log error for debugging
-    //         if (!res.headersSent) {
-    //             res.status(500).json({ error: "Failed to load operators", message: error.message }); // Send error response
-    //         }
-    //     }
-    // },
+    getOperators: async (req, res) => {
+        try {
+            const result = await adminService.getOperators();
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error in adminController.getOperators:", error); // Log error for debugging
+            if (!res.headersSent) {
+                res.status(500).json({ error: "Failed to load operators", message: error.message }); // Send error response
+            }
+        }
+    },
 
     // Middleware for handling file uploads
     upload: upload.single('file')
