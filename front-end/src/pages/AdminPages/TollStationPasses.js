@@ -3,6 +3,8 @@ import axios from 'axios';
 import '../../components/AdminComponents/TollStationPasses.css'; // Import the common form CSS
 import { useNavigate, Link } from "react-router-dom";
 import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
+import moment from 'moment-timezone';
+
 
 
 function TollStationPasses() {
@@ -22,15 +24,12 @@ function TollStationPasses() {
   }, [navigate]);
 
   const formatDateTime = (utcString) => {
-    const date = new Date(utcString + 'Z'); // Force UTC interpretation
-    return date.toLocaleString('en-GB', {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const dateUTC = moment.utc(utcString); // Parse as UTC
+    const dateEET = dateUTC.tz('Europe/Athens'); // Convert to EET
+    const dateEETMinus2Hours = dateEET.subtract(2, 'hours'); // Subtract 2 hours from EET
+
+    return dateEETMinus2Hours.format('YYYY-MM-DD HH:mm');
+
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
