@@ -17,6 +17,8 @@ import AddPasses from './pages/AdminPages/AddPasses';
 import ResetPasses from './pages/AdminPages/ResetPasses';
 import TollStatsChartPage from './pages/AdminPages/TollStatsChartPage';
 import UserManagement from './pages/AdminPages/UserManagement';
+import OperatorFinancials from './pages/OperatorPages/OperatorFinancials';
+import OperatorStatistics from './pages/OperatorPages/OperatorStatistics';
 
 function App() {
 
@@ -40,6 +42,8 @@ function App() {
           <Route path="/tollstationpasses" element={<TollStationPasses />} />
           <Route path="/passanalysis" element={<PassAnalysis />} />
           <Route path='/tollstatschartpie' element={<TollStatsChartPage />} />
+          <Route path="/operatorstatistics" element={<OperatorStatistics />} />
+          <Route path="/operatorfinancials" element={<OperatorFinancials />} />
         </Routes>
       </div>
     </Router>
