@@ -4,9 +4,13 @@ const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
 const tollStationsCollection = "tollstations";
-const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
+const moment = require('moment-timezone');
 
+const formatTimestampEET = (date) => { // New function to format to EET
+  return moment.utc(date).tz('EET').format('YYYY-MM-DD HH:mm'); // Convert UTC to EET and format
+};
 
 // Fetch passes from the database
 exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 'json') => {
@@ -22,8 +26,11 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
     }
 
     // Convert dateFrom and dateTo to YYYY-MM-DD HH:MM format
-    const formattedDateFrom = timestampFormatter(dateFrom, "0000");
-    const formattedDateTo = timestampFormatter(dateTo, "2359");
+    const formattedDateFromEET = timestampFormatter(dateFrom, "0000");
+    const formattedDateToEET = timestampFormatter(dateTo, "2359");
+
+    const startDateUTC = moment.utc(formattedDateFromEET).subtract(2, 'hours').toDate(); // Subtract 2 hours from start UTC date
+    const endDateUTC = moment.utc(formattedDateToEET).subtract(2, 'hours').toDate();
 
     // Connect to MongoDB
     client = new MongoClient(mongoUri);
@@ -52,7 +59,7 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
       .find({
         tollID: tollStationID.trim(),
         timestamp: {
-          $gte: formattedDateFrom, $lte: formattedDateTo
+          $gte: startDateUTC, $lte: endDateUTC
         },
       })
       .sort({ timestamp: 1 }) // Sort by timestamp ascending
@@ -69,13 +76,13 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
       stationID: tollStationID,
       stationOperator: operatorName,
       requestTimestamp: currentTimestamp(),
-      periodFrom: formatTimestamp(formattedDateFrom),
-      periodTo: formatTimestamp(formattedDateTo),
+      periodFrom: formatTimestampEET(startDateUTC),
+      periodTo: formatTimestampEET(endDateUTC),
       nPasses: passes.length,
       passList: passes.map((pass, index) => ({
         passIndex: index + 1,
         passID: pass._id,
-        timestamp: formatTimestamp(pass.timestamp),
+        timestamp: formatTimestampEET(pass.timestamp),
         tagID: pass.tagRef,
         tagProvider: pass.tagHomeID,
         passType: pass.tagHomeID === operatorName ? "home" : "away",
