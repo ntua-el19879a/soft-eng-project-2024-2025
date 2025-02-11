@@ -51,7 +51,7 @@ app.use('/api/passAnalysis', passAnalysisRoute);
 app.use('/api/passesCost', passesCostRoute);
 app.use('/api/chargesBy', chargesByRoute);
 app.use('/api/tollstats', tollStatsRoute);
-app.use('api/operatorFinancials', operatorFinancialsRoute);
+app.use('/api/operatorFinancials', operatorFinancialsRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
