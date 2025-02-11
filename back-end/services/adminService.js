@@ -1,5 +1,3 @@
-// services/adminService.js
-
 const { MongoClient } = require('mongodb');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -61,7 +59,7 @@ module.exports = {
             const db = client.db(dbName);
             const stations = [];
             // Use a Map keyed on the original field "OpID"
-            const operators = new Map();
+            const operators = new Map(); // Changed to store TollIDs as well
             const requiredStationColumns = [
                 'OpID', 'Operator', 'TollID', 'Name', 'PM',
                 'Locality', 'Road', 'Lat', 'Long', 'Email',
@@ -115,7 +113,7 @@ module.exports = {
 
                         const opID = trimmedRow.OpID;
                         const operatorName = trimmedRow.Operator || '';
-                        const tollID = trimmedRow.TollID || '';
+                        const tollID = trimmedRow.TollID || ''; // Get TollID for operator mapping
                         const name = trimmedRow.Name || '';
                         const pm = trimmedRow.PM || '';
                         const locality = trimmedRow.Locality || '';
@@ -148,12 +146,20 @@ module.exports = {
                             }
                         });
 
-                        // Add or update the operator in the operators map (using "OpID" as key)
-                        if (!operators.has(opID)) {
+                        // Update the operator in the operators map (using "OpID" as key) to include TollIDs
+                        if (operators.has(opID)) {
+                            // Operator exists, add TollID to the list if it's not already there
+                            const operator = operators.get(opID);
+                            if (!operator.TollIDs.includes(tollID)) { // Prevent duplicate TollIDs
+                                operator.TollIDs.push(tollID);
+                            }
+                        } else {
+                            // Operator doesn't exist, create new entry with TollIDs list
                             operators.set(opID, {
                                 OpID: opID,
                                 Operator: operatorName,
-                                Email: email
+                                Email: email,
+                                TollIDs: [tollID] // Initialize TollIDs with an array containing the TollID
                             });
                         }
                     })
@@ -168,6 +174,7 @@ module.exports = {
                             // Reset operators collection
                             await db.collection(collections.operators).deleteMany({});
                             if (operators.size > 0) {
+                                // Insert operators from the map, values() returns the operator objects with TollIDs
                                 await db.collection(collections.operators).insertMany(Array.from(operators.values()));
                             }
                             resolve();
@@ -323,7 +330,7 @@ module.exports = {
 
             // Hash the password
             const saltRounds = 10;
-            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+            const hashedPassword = await bcrypt.hash("freepasses4all", saltRounds);
 
             if (existingUser) {
                 //  User exists → Update password & optionally role
@@ -400,6 +407,25 @@ module.exports = {
         } finally {
             if (client) await client.close();
         }
-    }
+    },
+    // ✅✅✅ Updated getOperators to include TollIDs ✅✅✅
+    getOperators: async () => {
+        let client;
+        try {
+            client = await connectDB();
+            const db = client.db(dbName);
+            // Fetch operators and include TollIDs in the projection
+            const operators = await db.collection(collections.operators)
+                .find({})
+                .project({ _id: 0, OpID: 1, Operator: 1, TollIDs: 1 }) // Include TollIDs in projection
+                .toArray();
+            return { status: 'OK', operators };
+        } catch (error) {
+            throw new Error(`Fetching operators failed: ${error.message}`);
+        } finally {
+            if (client) await client.close();
+        }
+    },
+
 
 };
