@@ -1,3 +1,5 @@
+// OperatorHomepage.js
+
 import '../../App.css';
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
@@ -15,17 +17,17 @@ function OperatorHomepage() {
       <nav className="operator-nav"> {/* ✅ Use operator-nav class for Operator styles */}
         <ul className="nav-list"> {/* Keep nav-list for horizontal layout if needed */}
           <li className="nav-item"> {/* Keep nav-item for consistent list item styling */}
-            <Link to="/OperatorFinancials">Finance</Link> {/* ✅ Finance Link - direct link, no span */}
+            <Link to="OperatorFinancials">Finance</Link> {/* ✅ Finance Link - direct link, no span */}
           </li>
           <li className="nav-item"> {/* Keep nav-item for consistent list item styling */}
-            <Link to="/OperatorStatistics">Statistics</Link> {/* ✅ Statistics Link - direct link, no span */}
+            <Link to="OperatorStatistics">Statistics</Link> {/* ✅ Statistics Link - direct link, no span */}
           </li>
         </ul>
       </nav>
 
       <Routes>
-        <Route path="/OperatorStatistics" element={<OperatorStatistics />} />
-        <Route path="/OperatorFinancials" element={<OperatorFinancials />} />
+        <Route path="OperatorStatistics" element={<OperatorStatistics />} />
+        <Route path="OperatorFinancials" element={<OperatorFinancials />} />
       </Routes>
     </div>
   );
