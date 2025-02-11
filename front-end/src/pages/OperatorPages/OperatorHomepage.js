@@ -3,6 +3,7 @@
 import '../../App.css';
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
+import LogoutButton from '../LogoutButton';
 
 // Εισαγωγή όλων των operator σελίδων
 import OperatorStatistics from './OperatorStatistics';
@@ -29,6 +30,9 @@ function OperatorHomepage() {
         <Route path="/operatorstatistics" element={<OperatorStatistics />} />
         <Route path="/operatorfinancials" element={<OperatorFinancials />} />
       </Routes>
+      <div className="logout-container">
+        <LogoutButton />
+      </div>
     </div>
   );
 }
