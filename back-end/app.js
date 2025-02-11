@@ -25,10 +25,18 @@ app.post('/admin/resetstations', (req, res) => {
     res.redirect(307, '/api/admin/resetstations');
 });
 
+app.post('/login', (req, res) => {
+    // 307 status code preserves POST method during redirect
+    res.redirect(307, '/api/auth/login');
+});
+app.post('/logout', (req, res) => {
+    // 307 status code preserves POST method during redirect
+    res.redirect(307, '/api/auth/logout');
+});
 
 
 // Auth 
-app.use('/', authRoute); // Login/logout
+app.use('/api/auth', authRoute); // Login/logout
 
 // Admin endpoints
 app.use('/api/admin', adminRoutes);

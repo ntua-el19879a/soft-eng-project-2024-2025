@@ -18,7 +18,7 @@ function LogoutButton() {
 		}
 
 		try {
-			const response = await fetch('/logout', { // Call backend logout endpoint
+			const response = await fetch('/api/auth/logout', { // Call backend logout endpoint
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json', // Indicate sending JSON data
