@@ -23,6 +23,7 @@ function HealthCheck() {
     setLoading(true); // Start loading
     setError(null); // Clear any previous errors
 
+    console.log(token);
     axios.get('/api/admin/healthcheck', { // Use axios (or apiClient if you have refresh token setup)
       headers: {
         'Authorization': `Bearer ${token}` // Include token in Authorization header
