@@ -4,9 +4,13 @@ const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
 const tollStationsCollection = "tollstations";
-const { currentTimestamp, timestampFormatter, formatTimestamp } = require('../utils/timestampFormatter');
+const { currentTimestamp, timestampFormatter } = require('../utils/timestampFormatter');
 const { parse } = require('json2csv');
+const moment = require('moment-timezone');
 
+const formatTimestampEET = (date) => { // New function to format to EET
+  return moment.utc(date).tz('EET').format('YYYY-MM-DD HH:mm'); // Convert UTC to EET and format
+};
 
 // Fetch passes from the database
 exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 'json') => {
@@ -69,13 +73,13 @@ exports.getTollStationPasses = async (tollStationID, dateFrom, dateTo, format = 
       stationID: tollStationID,
       stationOperator: operatorName,
       requestTimestamp: currentTimestamp(),
-      periodFrom: formatTimestamp(formattedDateFrom),
-      periodTo: formatTimestamp(formattedDateTo),
+      periodFrom: formatTimestampEET(formattedDateFrom),
+      periodTo: formatTimestampEET(formattedDateTo),
       nPasses: passes.length,
       passList: passes.map((pass, index) => ({
         passIndex: index + 1,
         passID: pass._id,
-        timestamp: formatTimestamp(pass.timestamp),
+        timestamp: formatTimestampEET(pass.timestamp),
         tagID: pass.tagRef,
         tagProvider: pass.tagHomeID,
         passType: pass.tagHomeID === operatorName ? "home" : "away",

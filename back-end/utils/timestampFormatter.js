@@ -22,12 +22,13 @@ function timestampFormatter(dateStr, timeStr) {
   const hours = timeStr.substring(0, 2);
   const mins = timeStr.substring(2, 4);
 
-  return new Date(
+  return new Date(Date.UTC(
     parseInt(year),
     parseInt(month) - 1, // Months are 0-indexed
     parseInt(day),
     parseInt(hours),
     parseInt(mins)
+  )
   );
 }
 function formatTimestamp(date) {

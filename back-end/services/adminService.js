@@ -244,12 +244,13 @@ module.exports = {
                             seenPasses.add(passKey);
 
                             // Parse timestamp and validate charge
-                            const m = moment(row.timestamp, 'YYYY-MM-DD HH:mm', 'UTC', true);
+                            const m = moment(row.timestamp, 'YYYY-MM-DD HH:mm', 'EET', true);
                             if (!m.isValid()) {
                                 console.error(`Invalid timestamp encountered: "${row.timestamp}"`);
                                 throw new Error(`Invalid timestamp format: ${row.timestamp}`);
                             }
-                            timestamp = m.toDate();
+
+                            timestamp = m.utc().toDate();
                             const tollID = row.tollID;
                             const tagRef = row.tagRef;
                             const tagHomeID = row.tagHomeID;
