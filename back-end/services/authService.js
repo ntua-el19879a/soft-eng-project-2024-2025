@@ -8,8 +8,10 @@ const { mongoUri } = require('../config/dbConfig');
 const dbName = 'toll-interop-db';
 const usersCollection = 'users';
 const refreshTokensCollection = 'refreshTokens';
-
+console.log("authService.js - Resolved jwtSecret value:", jwtSecret);
 exports.login = async (username, password) => {
+    console.log("authService.js - Resolved jwtSecret value:", jwtSecret);
+
     let client;
     try {
         client = new MongoClient(mongoUri);
@@ -28,13 +30,13 @@ exports.login = async (username, password) => {
         }
 
         // Generate tokens
-        const accessToken = jwt.sign({ username, role: user.role }, jwtSecret, { expiresIn: jwtExpiration });
+        const token = jwt.sign({ username, role: user.role }, jwtSecret, { expiresIn: jwtExpiration });
         const refreshToken = jwt.sign({ username }, jwtRefreshSecret, { expiresIn: jwtRefreshExpiration });
 
         // Store refresh token in DB
         await db.collection(refreshTokensCollection).insertOne({ token: refreshToken, username });
 
-        return { accessToken, refreshToken, role: user.role };
+        return { token, refreshToken, role: user.role };
     } catch (error) {
         throw error.status ? error : { status: 500, message: 'Login failed' };
     } finally {
@@ -58,7 +60,7 @@ exports.refreshToken = async (token) => {
         const decoded = jwt.verify(token, jwtRefreshSecret);
         const newAccessToken = jwt.sign({ username: decoded.username }, jwtSecret, { expiresIn: jwtExpiration });
 
-        return { accessToken: newAccessToken };
+        return { token: newAccessToken };
     } catch (error) {
         throw { status: 403, message: 'Invalid or expired refresh token' };
     } finally {

@@ -63,11 +63,11 @@ function AdminHomepage() {
             Admin Functions
             {adminFunctionsDropdownOpen && (
               <ul className="dropdown">
-                <li><Link to="/healthcheck">Health Check</Link></li>
+                <li><Link to="/admin/healthcheck">Health Check</Link></li>
                 <li><Link to="/users">Users List</Link></li>
-                <li><Link to="/resetstations">Reset Stations</Link></li>
-                <li><Link to="/resetpasses">Reset Passes</Link></li>
-                <li><Link to="/addpasses">Add Passes</Link></li>
+                <li><Link to="/admin/resetstations">Reset Stations</Link></li>
+                <li><Link to="/admin/resetpasses">Reset Passes</Link></li>
+                <li><Link to="/admin/addpasses">Add Passes</Link></li>
               </ul>
             )}
           </li>
@@ -94,11 +94,11 @@ function AdminHomepage() {
         <Route path="/chargesby" element={<ChargesBy />} />
         <Route path="/tollstationpasses" element={<TollStationPasses />} />
         <Route path="/passanalysis" element={<PassAnalysis />} />
-        <Route path="/healthcheck" element={<HealthCheck />} />
+        <Route path="/admin/healthcheck" element={<HealthCheck />} />
         <Route path="/users" element={<UsersList />} />
-        <Route path="/resetstations" element={<ResetStations />} />
-        <Route path="/resetpasses" element={<ResetPasses />} />
-        <Route path="/addpasses" element={<AddPasses />} />
+        <Route path="/admin/resetstations" element={<ResetStations />} />
+        <Route path="/admin/resetpasses" element={<ResetPasses />} />
+        <Route path="/admin/addpasses" element={<AddPasses />} />
       </Routes>
     </div>
   );

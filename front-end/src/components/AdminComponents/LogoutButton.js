@@ -11,7 +11,7 @@ function LogoutButton() {
 		sessionStorage.removeItem("refreshToken");
 		sessionStorage.removeItem("role");
 		// Immediately navigate to the login page
-		navigate("/");
+		navigate("/login");
 	};
 
 	return (

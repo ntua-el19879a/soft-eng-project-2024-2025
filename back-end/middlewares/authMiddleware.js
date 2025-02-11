@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/jwtConfig');
 
+console.log("authMiddleware.js - Resolved jwtSecret value:", jwtSecret);
 exports.authenticateJWT = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
+    console.log("Token received by middleware:", token);
     if (!token) {
         return res.status(401).json({ error: 'Authentication token required' });
     }

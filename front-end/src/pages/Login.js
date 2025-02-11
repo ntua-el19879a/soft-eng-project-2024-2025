@@ -27,9 +27,9 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const url = `/api/auth/login`;
+            const url = '/login';
             const response = await axios.post(url, { username, password });
-            const accessToken = response.data.accessToken;
+            const accessToken = response.data.token;
 
             sessionStorage.setItem("token", accessToken);
             sessionStorage.setItem("refreshToken", response.data.refreshToken);

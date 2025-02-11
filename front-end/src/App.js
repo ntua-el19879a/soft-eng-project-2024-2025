@@ -18,19 +18,21 @@ import ResetPasses from './pages/AdminPages/ResetPasses';
 import UserManagement from './pages/AdminPages/UserManagement';
 
 function App() {
+
   return (
     <Router>
       <div className="App">
         <h1>Highway Interoperability System</h1>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Login />} /> {/* Route for the root path */}
+          <Route path="/login" element={<Login />} /> {/* You might have this too, but "/" is root */}
           <Route path="/adminpage/*" element={<Admin />} />
           <Route path="/operatorpage/*" element={<Operator />} />
           <Route path="/passescost" element={<PassesCost />} />
-          <Route path="/healthcheck" element={<HealthCheck />} />
-          <Route path="/resetstations" element={<ResetStations />} />
-          <Route path="/resetpasses" element={<ResetPasses />} />
-          <Route path="/addpasses" element={<AddPasses />} />
+          <Route path="/admin/healthcheck" element={<HealthCheck />} />
+          <Route path="/admin/resetstations" element={<ResetStations />} />
+          <Route path="/admin/resetpasses" element={<ResetPasses />} />
+          <Route path="/admin/addpasses" element={<AddPasses />} />
           <Route path="/users" element={<UsersList />} />
           <Route path="/usermanagement" element={<UserManagement />} />
           <Route path="/chargesby" element={<ChargesBy />} />

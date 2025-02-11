@@ -23,6 +23,8 @@ exports.refreshToken = async (req, res) => {
 };
 
 exports.logout = async (req, res) => {
+    console.log("Request Headers:", req.headers); // Log request headers
+    console.log("Request Body:", req.body);
     try {
         const { token } = req.body;
         if (!token) return res.status(400).json({ error: 'Refresh token required' });
