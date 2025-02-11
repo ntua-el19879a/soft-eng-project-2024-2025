@@ -148,7 +148,8 @@ module.exports = {
 
     getOperators: async (req, res) => {
         try {
-            const result = await adminService.getOperators();
+            const operatorCredentials = req.query.operatorcredentials; // Get optional query parameter
+            const result = await adminService.getOperators(operatorCredentials); // Pass parameter to service
             res.status(200).json(result);
         } catch (error) {
             console.error("Error in adminController.getOperators:", error); // Log error for debugging

@@ -5,6 +5,9 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const { authenticateJWT, authorizeRoles } = require('../middlewares/authMiddleware');
 
+router.use(authenticateJWT, authorizeRoles(['admin', 'operator']));
+router.get('/operators', adminController.getOperators);
+
 router.use(authenticateJWT, authorizeRoles(['admin']));
 
 router.get('/healthcheck', adminController.healthCheck);

@@ -14,14 +14,13 @@ function OperatorFinancials() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const username = sessionStorage.getItem("username");
         const token = sessionStorage.getItem("token");
         const role = sessionStorage.getItem("role");
         if (!token || role !== "operator") {
             navigate("/");
             return;
         }
-
-        const username = sessionStorage.getItem("username");
         let opID = '';
         switch (username) {
             case 'aegeanmotorway':

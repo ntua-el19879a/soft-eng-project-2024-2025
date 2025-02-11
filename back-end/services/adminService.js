@@ -331,7 +331,7 @@ module.exports = {
 
             // Hash the password
             const saltRounds = 10;
-            const hashedPassword = await bcrypt.hash("freepasses4all", saltRounds);
+            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
             if (existingUser) {
                 //  User exists → Update password & optionally role
@@ -410,16 +410,30 @@ module.exports = {
         }
     },
     // ✅✅✅ Updated getOperators to include TollIDs ✅✅✅
-    getOperators: async () => {
+    getOperators: async (operatorCredentials) => { // Added operatorCredentials parameter
         let client;
         try {
             client = await connectDB();
             const db = client.db(dbName);
-            // Fetch operators and include TollIDs in the projection
+            let query = {};
+            let projection = { _id: 0, OpID: 1, Operator: 1, Email: 1, TollIDs: 1 }; // Default projection
+
+            if (operatorCredentials) {
+                query = {
+                    $or: [
+                        { Operator: { $regex: new RegExp(`^${operatorCredentials}`, 'i') } }, // Case-insensitive search on Operator
+                        { Email: { $regex: new RegExp(`^${operatorCredentials}`, 'i') } }    // Case-insensitive search on Email
+                    ]
+                };
+                projection = { _id: 0, OpID: 1 }; // Projection to return only OpID
+            }
+
+            // Fetch operators with conditional projection and query
             const operators = await db.collection(collections.operators)
-                .find({})
-                .project({ _id: 0, OpID: 1, Operator: 1, TollIDs: 1 }) // Include TollIDs in projection
+                .find(query)
+                .project(projection)
                 .toArray();
+
             return { status: 'OK', operators };
         } catch (error) {
             throw new Error(`Fetching operators failed: ${error.message}`);

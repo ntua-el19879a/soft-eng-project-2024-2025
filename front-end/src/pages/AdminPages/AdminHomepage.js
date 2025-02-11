@@ -16,6 +16,7 @@ import ResetPasses from './ResetPasses';
 import LogoutButton from '../LogoutButton';
 import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 import TollStatsChartPage from './TollStatsChartPage';
+import UserMananagent from '../AdminPages/UserManagement';
 
 function AdminHomepage() {
   const [advancedSearchDropdownOpen, setAdvancedSearchDropdownOpen] = useState(false);
@@ -64,10 +65,11 @@ function AdminHomepage() {
             {adminFunctionsDropdownOpen && (
               <ul className="dropdown">
                 <li><Link to="/admin/healthcheck">Health Check</Link></li>
-                <li><Link to="/users">Users List</Link></li>
                 <li><Link to="/admin/resetstations">Reset Stations</Link></li>
                 <li><Link to="/admin/resetpasses">Reset Passes</Link></li>
                 <li><Link to="/admin/addpasses">Add Passes</Link></li>
+                <li><Link to="/admin/users">Users List</Link></li>
+                <li><Link to="/admin/usermod">User Management </Link></li>
               </ul>
             )}
           </li>
@@ -95,7 +97,8 @@ function AdminHomepage() {
         <Route path="/tollstationpasses" element={<TollStationPasses />} />
         <Route path="/passanalysis" element={<PassAnalysis />} />
         <Route path="/admin/healthcheck" element={<HealthCheck />} />
-        <Route path="/users" element={<UsersList />} />
+        <Route path="/admin/users" element={<UsersList />} />
+        <Route path="/admin/usermod" element={<UserMananagent />} />
         <Route path="/admin/resetstations" element={<ResetStations />} />
         <Route path="/admin/resetpasses" element={<ResetPasses />} />
         <Route path="/admin/addpasses" element={<AddPasses />} />
