@@ -39,6 +39,14 @@ function Login() {
             if (response.data.role === 'admin') {
                 navigate('/adminpage');
             } else if (response.data.role === 'operator') {
+                const operatorsURL = `/api/admin/operators?operatorcredentials=${username}`;
+                const operatorsResponse = await axios.get(operatorsURL, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    }
+                });
+                const opid = operatorsResponse.data.operators[0].OpID;
+                sessionStorage.setItem("opID", opid);
                 navigate('/operatorpage');
             } else {
                 setError('Unknown role. Contact support.');

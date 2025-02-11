@@ -14,42 +14,12 @@ function OperatorFinancials() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const username = sessionStorage.getItem("username");
+        const opID = sessionStorage.getItem("opID");
         const token = sessionStorage.getItem("token");
         const role = sessionStorage.getItem("role");
         if (!token || role !== "operator") {
             navigate("/");
             return;
-        }
-        let opID = '';
-        switch (username) {
-            case 'aegeanmotorway':
-                opID = 'AM';
-                break;
-            case 'neaodos':
-                opID = 'NO';
-                break;
-            case 'gefyra':
-                opID = 'GE';
-                break;
-            case 'kentrikiodos':
-                opID = 'KO';
-                break;
-            case 'moreas':
-                opID = 'MO';
-                break;
-            case 'olympiaodos':
-                opID = 'OO';
-                break;
-            case 'egnatia':
-                opID = 'EG';
-                break;
-            case 'attiki':
-                opID = 'NAO';
-                break;
-            default:
-                opID = '';
-                break;
         }
         setOperatorID(opID);
     }, [navigate]);
