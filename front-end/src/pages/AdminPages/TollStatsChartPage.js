@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Or your apiClient
 import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 import '../../components/AdminComponents/TollStatsChartPage.css'; // Optional CSS
 
@@ -164,6 +164,12 @@ function TollStatsChartPage() {
                     {loading ? 'Loading...' : 'Generate Chart'}
                 </button>
             </form>
+            <div className="back-button">
+                <Link to="/adminpage">
+                    <button type="button">Back to Dashboard</button>
+                </Link>
+            </div>
+
 
             {error && <p className="error-message">Error: {error}</p>}
 

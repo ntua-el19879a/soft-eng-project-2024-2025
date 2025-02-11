@@ -13,7 +13,7 @@ import UsersList from '../AdminPages/UsersList';
 import ResetStations from './ResetStations';
 import AddPasses from './AddPasses';
 import ResetPasses from './ResetPasses';
-import LogoutButton from '../../components/AdminComponents/LogoutButton';
+import LogoutButton from '../LogoutButton';
 import SessionExpiredBanner from '../../components/AdminComponents/SessionExpiredBanner';
 import TollStatsChartPage from './TollStatsChartPage';
 
