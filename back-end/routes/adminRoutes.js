@@ -16,7 +16,7 @@ router.post('/resetpasses', adminController.resetPasses);
 router.post('/addpasses', upload.single('file'), adminController.addPasses);
 router.post('/usermod/:username/:password/:role?', adminController.modifyUser);
 router.get('/users', adminController.getUsers);
-router.delete('/userdel/:username', adminController.deleteUser);
+router.post('/userdel/:username', adminController.deleteUser);
 router.get('/operators', adminController.getOperators);
 
 module.exports = router;

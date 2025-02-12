@@ -386,7 +386,7 @@ module.exports = {
             const db = client.db(dbName);
             const users = await db.collection(collections.users);
 
-            const user = await users.findOne({ username });
+            const user = await users.findOne({ username: `${username}` });
             if (!user) {
                 return { status: 'failed', message: `User '${username}' not found` };
             }
