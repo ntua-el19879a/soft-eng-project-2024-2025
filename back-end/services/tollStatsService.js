@@ -1,8 +1,12 @@
 const { MongoClient } = require('mongodb');
 const { mongoUri } = require('../config/dbConfig');
+const { timestampFormatter } = require('../utils/timestampFormatter');
+const moment = require('moment-timezone');
+
 const dbName = "toll-interop-db";
 const passesCollection = "passes";
 const operatorsCollection = "operators";
+
 
 exports.getTollStatsData = async (operatorId, periodType, year, periodValue) => {
     let client;
@@ -25,38 +29,39 @@ exports.getTollStatsData = async (operatorId, periodType, year, periodValue) => 
 
         switch (periodType) {
             case 'yearly':
-                startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0)); // January 1st, 00:00:00 UTC
-                endDate = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999)); // December 31st, 23:59:59.999 UTC
+                startDate = year + "0101";
+                endDate = year + "1231";
                 break;
             case 'monthly': {
                 const month = parseInt(periodValue, 10) - 1; // JavaScript months are 0-indexed
-                startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0)); // First day of the month, 00:00:00 UTC
-                endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)); // Last day of the month, 23:59:59.999 UTC
+                startDate = year + month + "01";
+                endDate = year + month + "31";
                 break;
             }
             case 'quarterly': {
                 const quarter = parseInt(periodValue, 10);
                 const startMonth = (quarter - 1) * 3; // JavaScript months are 0-indexed
                 const endMonth = startMonth + 3;
-                startDate = new Date(Date.UTC(year, startMonth, 1, 0, 0, 0, 0)); // First day of the quarter, 00:00:00 UTC
-                endDate = new Date(Date.UTC(year, endMonth, 0, 23, 59, 59, 999)); // Last day of the quarter, 23:59:59.999 UTC
+                startDate = year + startMonth + "01";
+                endDate = year + endMonth + "31";
                 break;
             }
             default:
                 throw new Error("Invalid period type");
         }
+        const formattedDateFromEET = timestampFormatter(startDate, "0000");
+        const formattedDateToEET = timestampFormatter(endDate, "2359");
 
-        // Logging for debugging
-        console.log("startDate (UTC):", startDate.toISOString());
-        console.log("endDate (UTC):", endDate.toISOString());
+        const startDateUTC = moment.utc(formattedDateFromEET).subtract(2, 'hours').toDate(); // Subtract 2 hours from start UTC date
+        const endDateUTC = moment.utc(formattedDateToEET).subtract(2, 'hours').toDate();
 
         const aggregationPipeline = [
             {
                 $match: {
                     tollID: { $in: tollIDs },
                     timestamp: {
-                        $gte: startDate,
-                        $lt: endDate // Use $lt to exclude the exact endDate
+                        $gte: startDateUTC,
+                        $lt: endDateUTC // Use $lt to exclude the exact endDate
                     }
                 }
             },
