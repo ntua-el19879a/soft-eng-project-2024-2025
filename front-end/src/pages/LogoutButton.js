@@ -6,9 +6,9 @@ function LogoutButton() {
 	const navigate = useNavigate();
 
 	const handleLogout = async () => {
-		const refreshToken = sessionStorage.getItem("refreshToken"); // Get refresh token
+		const accessToken = sessionStorage.getItem("token");
 
-		if (!refreshToken) {
+		if (!accessToken) {
 			// No refresh token found, just clear session and redirect (already logged out or session expired)
 			sessionStorage.removeItem("token");
 			sessionStorage.removeItem("refreshToken");
@@ -22,8 +22,8 @@ function LogoutButton() {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json', // Indicate sending JSON data
+					'Authorization': `Bearer ${accessToken}`, // Include token in header
 				},
-				body: JSON.stringify({ token: refreshToken }), // Send refresh token in body
 			});
 
 			if (response.ok) {

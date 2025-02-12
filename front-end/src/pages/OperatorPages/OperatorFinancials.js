@@ -37,9 +37,19 @@ function OperatorFinancials() {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log("Response data:", response.data);
+
+            const data = Array.isArray(response.data)
+                ? response.data
+                : response.data.financials; // Adjust this if the array is wrapped
+
+            if (!Array.isArray(data)) {
+                throw new Error("Expected financial data to be an array.");
+            }
+
 
             // Calculate the difference and determine the color
-            const dataWithDifference = response.data.map(item => {
+            const dataWithDifference = data.map(item => {
                 const difference = (item.received - item.paid).toFixed(2);
                 let color = 'black'; // Default color
                 if (difference > 0) {

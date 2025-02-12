@@ -182,7 +182,7 @@ function TollStatsChartPage() {
                             cy="50%"
                             labelLine={true}
                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(2)}%`}
-                            outerRadius={180}
+                            outerRadius={160}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -190,7 +190,12 @@ function TollStatsChartPage() {
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
-                        <Legend />
+                        <Legend
+                            align="center"         // Center the legend horizontally
+                            verticalAlign="bottom" // Position legend below the chart
+                            layout="horizontal"    // Arrange legend items horizontally
+                            wrapperStyle={{ top: 400, left: 0, right: 0, bottom: 0 }} // Adjust wrapper style
+                        />
                         <Tooltip formatter={(value) => [`€${value.toFixed(2)}`, 'Total Charges']} />
                     </PieChart>
                 </div>

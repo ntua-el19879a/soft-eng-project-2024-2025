@@ -79,6 +79,8 @@
 .chart-container {
     margin-top: 20px;
     display: flex;
-    justify-content: center; /* Center horizontally */
+    flex-direction: column;
     align-items: center; /* Center vertically */
+    padding-top: 30px;
+    padding-bottom: 20px;
 }

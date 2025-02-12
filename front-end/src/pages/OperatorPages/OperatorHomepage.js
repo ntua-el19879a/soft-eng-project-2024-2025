@@ -3,7 +3,8 @@
 import '../../App.css';
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
-import LogoutButton from '../LogoutButton'; // Import the LogoutButton
+import LogoutButton from '../LogoutButton';
+
 // Εισαγωγή όλων των operator σελίδων
 import OperatorStatistics from './OperatorStatistics';
 import OperatorFinancials from './OperatorFinancials';
@@ -25,14 +26,13 @@ function OperatorHomepage() {
         </ul>
       </nav>
 
-      <div className="logout-container">
-        <LogoutButton />
-      </div>
-
       <Routes>
         <Route path="/operatorstatistics" element={<OperatorStatistics />} />
         <Route path="/operatorfinancials" element={<OperatorFinancials />} />
       </Routes>
+      <div className="logout-container">
+        <LogoutButton />
+      </div>
     </div>
 
   );

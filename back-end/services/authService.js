@@ -4,13 +4,14 @@ const { MongoClient } = require('mongodb');
 const { jwtSecret, jwtExpiration, jwtRefreshExpiration, jwtRefreshSecret } = require('../config/jwtConfig');
 const { mongoUri } = require('../config/dbConfig');
 
+const tokenBlacklist = require('../utils/tokenBlacklist');
+
 
 const dbName = 'toll-interop-db';
 const usersCollection = 'users';
 const refreshTokensCollection = 'refreshTokens';
-console.log("authService.js - Resolved jwtSecret value:", jwtSecret);
+
 exports.login = async (username, password) => {
-    console.log("authService.js - Resolved jwtSecret value:", jwtSecret);
 
     let client;
     try {
@@ -69,28 +70,39 @@ exports.refreshToken = async (token) => {
 };
 
 // Logout Function
-exports.logout = async (refreshToken) => {
+exports.logout = async (accessToken) => {
     let client;
+    if (!accessToken) throw { status: 400, message: 'Access token required' };
+
     try {
 
-        if (!refreshToken) {
-            throw { status: 400, message: 'Refresh token required' };
-        }
+        const decoded = jwt.verify(accessToken, jwtSecret);
+        tokenBlacklist.add(accessToken);
 
-        client = new MongoClient(mongoUri);
-        await client.connect();
-        const db = client.db(dbName);
-
-        // Check if refresh token exists
-        const tokenExists = await db.collection(refreshTokensCollection).findOne({ token: refreshToken });
-        if (!tokenExists) {
-            throw { status: 403, message: 'Invalid refresh token' };
-        }
-
-        // Remove refresh token from DB
-        await db.collection(refreshTokensCollection).deleteOne({ token: refreshToken });
-
+        // Add token to blacklist (requires redis/mongoDB)
         return { message: 'Logout successful' };
+
+        /*
+            if (!refreshToken) {
+                throw { status: 400, message: 'Refresh token required' };
+            }
+    
+            client = new MongoClient(mongoUri);
+            await client.connect();
+            const db = client.db(dbName);
+    
+            // Check if refresh token exists
+            const tokenExists = await db.collection(refreshTokensCollection).findOne({ token: refreshToken });
+            if (!tokenExists) {
+                throw { status: 403, message: 'Invalid refresh token' };
+            }
+    
+            // Remove refresh token from DB
+            await db.collection(refreshTokensCollection).deleteOne({ token: refreshToken });
+    
+            return { message: 'Logout successful' };
+            */
+
     } catch (error) {
         throw error.status ? error : { status: 500, message: 'Logout failed' };
     } finally {

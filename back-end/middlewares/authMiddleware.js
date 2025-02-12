@@ -1,12 +1,15 @@
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/jwtConfig');
+const tokenBlacklist = require('../utils/tokenBlacklist');
 
-console.log("authMiddleware.js - Resolved jwtSecret value:", jwtSecret);
+
 exports.authenticateJWT = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    console.log("Token received by middleware:", token);
     if (!token) {
         return res.status(401).json({ error: 'Authentication token required' });
+    }
+    if (tokenBlacklist.has(token)) {
+        return res.status(403).json({ error: 'Token has been revoked. Please log in again.' });
     }
 
     try {
