@@ -19,6 +19,7 @@ import TollStatsChartPage from './pages/AdminPages/TollStatsChartPage';
 import UserManagement from './pages/AdminPages/UserManagement';
 import OperatorFinancials from './pages/OperatorPages/OperatorFinancials';
 import OperatorStatistics from './pages/OperatorPages/OperatorStatistics';
+import OperatorMonthly from './pages/OperatorPages/OperatorMonthly';
 
 function App() {
 
@@ -44,6 +45,7 @@ function App() {
           <Route path='/tollstatschartpie' element={<TollStatsChartPage />} />
           <Route path="/operatorstatistics" element={<OperatorStatistics />} />
           <Route path="/operatorfinancials" element={<OperatorFinancials />} />
+          <Route path="/operatormonthly" element={<OperatorMonthly />} />
         </Routes>
       </div>
     </Router>

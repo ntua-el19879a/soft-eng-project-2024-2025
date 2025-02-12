@@ -9,6 +9,7 @@ const passesCostRoute = require('./routes/passesCostRoute');
 const chargesByRoute = require('./routes/chargesByRoute');
 const operatorFinancialsRoute = require('./routes/operatorFinancialsRoute');
 const tollStatsRoute = require('./routes/tollStatsRoute');
+const monthlyChargesRoute = require('./routes/monthlyChargesRoute');
 
 app.use(express.json());
 
@@ -76,6 +77,7 @@ app.use('/api/passesCost', passesCostRoute);
 app.use('/api/chargesBy', chargesByRoute);
 app.use('/api/tollstats', tollStatsRoute);
 app.use('/api/operatorFinancials', operatorFinancialsRoute);
+app.use('/api/monthlyCharges', monthlyChargesRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
