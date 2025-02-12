@@ -7,19 +7,24 @@
     },
     "servers": [
         {
-            "url": "http://localhost:9115/api",
-            "description": "Local development server"
+            "url": "https://{{host}}:9115/api",
+            "description": "Default server URL"
+        }
+    ],
+    "security": [
+        {
+            "BearerAuth": []
         }
     ],
     "paths": {
-        "/auth/login": {
+        "/login": {
             "post": {
                 "summary": "User login",
-                "description": "Logs in a user and returns an access token and refresh token.",
+                "description": "Logs in a user and returns an access token.",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "application/x-www-form-urlencoded": {
                             "schema": {
                                 "type": "object",
                                 "properties": {
@@ -46,14 +51,9 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "accessToken": {
-                                            "type": "string"
-                                        },
-                                        "refreshToken": {
-                                            "type": "string"
-                                        },
-                                        "role": {
-                                            "type": "string"
+                                        "token": {
+                                            "type": "string",
+                                            "example": "FOO"
                                         }
                                     }
                                 }
@@ -61,15 +61,20 @@
                         }
                     },
                     "401": {
-                        "description": "Invalid credentials"
+                        "description": "Unauthorized - Invalid credentials"
                     }
                 }
             }
         },
-        "/auth/logout": {
+        "/logout": {
             "post": {
                 "summary": "User logout",
-                "description": "Logs out a user by invalidating their refresh token.",
+                "description": "Logs out a user by invalidating the current session.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful logout"
@@ -80,13 +85,762 @@
                 }
             }
         },
-        "/operatorFinancials/{operatorID}": {
+        "/tollStationPasses/{tollStationID}/{date_from}/{date_to}": {
             "get": {
-                "summary": "Retrieve financial transactions for an operator",
-                "description": "Returns monthly financial transactions for an operator, including payments to and from other operators.",
+                "summary": "Retrieve passes for a toll station",
+                "description": "Returns a list of passes for a given toll station within a date range.",
                 "parameters": [
                     {
-                        "name": "operatorID",
+                        "name": "tollStationID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "json",
+                                "csv"
+                            ],
+                            "default": "json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "stationID": {
+                                            "type": "string"
+                                        },
+                                        "stationOperator": {
+                                            "type": "string"
+                                        },
+                                        "requestTimestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "periodFrom": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "periodTo": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "nPasses": {
+                                            "type": "integer"
+                                        },
+                                        "passList": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "passIndex": {
+                                                        "type": "integer"
+                                                    },
+                                                    "passID": {
+                                                        "type": "string"
+                                                    },
+                                                    "timestamp": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "tagID": {
+                                                        "type": "string"
+                                                    },
+                                                    "tagProvider": {
+                                                        "type": "string"
+                                                    },
+                                                    "passType": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "home",
+                                                            "visitor"
+                                                        ]
+                                                    },
+                                                    "passCharge": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid toll station ID or date format"
+                    }
+                }
+            }
+        },
+        "/passAnalysis/{stationOpID}/{tagOpID}/{date_from}/{date_to}": {
+            "get": {
+                "summary": "Analyze passes between operators",
+                "description": "Returns analysis of passes between operators for a given period.",
+                "parameters": [
+                    {
+                        "name": "stationOpID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tagOpID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "json",
+                                "csv"
+                            ],
+                            "default": "json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "stationOpID": {
+                                            "type": "string"
+                                        },
+                                        "tagOpID": {
+                                            "type": "string"
+                                        },
+                                        "requestTimestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "periodFrom": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "periodTo": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "nPasses": {
+                                            "type": "integer"
+                                        },
+                                        "passList": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "passIndex": {
+                                                        "type": "integer"
+                                                    },
+                                                    "passID": {
+                                                        "type": "string"
+                                                    },
+                                                    "stationID": {
+                                                        "type": "string"
+                                                    },
+                                                    "timestamp": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "tagID": {
+                                                        "type": "string"
+                                                    },
+                                                    "passCharge": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid operator or date format"
+                    }
+                }
+            }
+        },
+        "/passesCost/{tollOpID}/{tagOpID}/{date_from}/{date_to}": {
+            "get": {
+                "summary": "Get pass cost between operators",
+                "description": "Returns the cost of passes between toll and tag operators.",
+                "parameters": [
+                    {
+                        "name": "tollOpID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tagOpID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "json",
+                                "csv"
+                            ],
+                            "default": "json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tollOpID": {
+                                            "type": "string"
+                                        },
+                                        "tagOpID": {
+                                            "type": "string"
+                                        },
+                                        "requestTimestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "periodFrom": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "periodTo": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "nPasses": {
+                                            "type": "integer"
+                                        },
+                                        "passesCost": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    }
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid operator or date format"
+                    }
+                }
+            }
+        },
+        "/chargesBy/{tollOpID}/{date_from}/{date_to}": {
+            "get": {
+                "summary": "Get charges by toll operator",
+                "description": "Returns charges by a toll operator from other operators.",
+                "parameters": [
+                    {
+                        "name": "tollOpID",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "json",
+                                "csv"
+                            ],
+                            "default": "json"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tollOpID": {
+                                            "type": "string"
+                                        },
+                                        "requestTimestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "periodFrom": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "periodTo": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "vOpList": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "visitingOpID": {
+                                                        "type": "string"
+                                                    },
+                                                    "nPasses": {
+                                                        "type": "integer"
+                                                    },
+                                                    "passesCost": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid operator or date format"
+                    }
+                }
+            }
+        },
+        "/admin/resetpasses": {
+            "post": {
+                "summary": "Reset all passes",
+                "description": "Deletes all pass data. Only accessible by an admin.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Passes reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "failed"
+                                        },
+                                        "info": {
+                                            "type": "string",
+                                            "example": "reason"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/resetstations": {
+            "post": {
+                "summary": "Reset toll stations",
+                "description": "Deletes and resets all toll station data. Only accessible by an admin.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Toll stations reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "failed"
+                                        },
+                                        "info": {
+                                            "type": "string",
+                                            "example": "reason"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/healthcheck": {
+            "get": {
+                "summary": "System health check",
+                "description": "Returns the status of the API and database.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Health status OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "OK"
+                                        },
+                                        "dbconnection": {
+                                            "type": "string",
+                                            "example": "Connection string details"
+                                        },
+                                        "n_stations": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "n_tags": {
+                                            "type": "integer",
+                                            "example": 100
+                                        },
+                                        "n_passes": {
+                                            "type": "integer",
+                                            "example": 1000
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Health status failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "failed"
+                                        },
+                                        "dbconnection": {
+                                            "type": "string",
+                                            "example": "Connection string details"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    }
+                }
+            }
+        },
+        "/admin/addpasses": {
+            "post": {
+                "summary": "Add pass entries from CSV",
+                "description": "Uploads a CSV file containing pass data. Only accessible by an admin.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "source": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "CSV file with pass entries"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Passes added successfully"
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid file format"
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    }
+                }
+            }
+        },
+        "/admin/usermod": {
+            "post": {
+                "summary": "Create or modify a user",
+                "description": "Creates a new user or changes the password of an existing user. Only accessible by an admin.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "username",
+                                    "password"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User modified successfully"
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid request format"
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    }
+                }
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "summary": "List users",
+                "description": "Returns a list of usernames. Only accessible by an admin.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "example": "user1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (Requires admin role)"
+                    }
+                }
+            }
+        },
+        "/monthlyCharges/{opID}": {
+            "get": {
+                "summary": "Retrieve monthly charges for an operator",
+                "description": "Returns monthly financial transactions for an operator.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "opID",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -116,12 +870,6 @@
                                     "items": {
                                         "type": "object",
                                         "properties": {
-                                            "year": {
-                                                "type": "integer"
-                                            },
-                                            "month": {
-                                                "type": "integer"
-                                            },
                                             "transactions": {
                                                 "type": "array",
                                                 "items": {
@@ -138,6 +886,12 @@
                                                         }
                                                     }
                                                 }
+                                            },
+                                            "year": {
+                                                "type": "integer"
+                                            },
+                                            "month": {
+                                                "type": "integer"
                                             }
                                         }
                                     }
@@ -145,25 +899,29 @@
                             },
                             "text/csv": {
                                 "schema": {
-                                    "type": "string",
-                                    "example": "year,month,otherOpID,paid,received\\n2024,1,NAO,120.50,80.75"
+                                    "type": "string"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid operator ID"
+                        "description": "Bad request - Invalid operator ID"
                     }
                 }
             }
         },
-        "/tollStationPasses/{tollStationID}/{date_from}/{date_to}": {
+        "/operatorFinancials/{opID}/{datefrom}/{dateto}": {
             "get": {
-                "summary": "Retrieve passes for a toll station",
-                "description": "Returns all passes for a given toll station within a date range.",
+                "summary": "Retrieve financial summary for an operator within a date range",
+                "description": "Returns financial transactions summary for an operator between datefrom and dateto.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
-                        "name": "tollStationID",
+                        "name": "opID",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -171,21 +929,23 @@
                         }
                     },
                     {
-                        "name": "date_from",
+                        "name": "datefrom",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "20240101"
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
                         }
                     },
                     {
-                        "name": "date_to",
+                        "name": "dateto",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "example": "20240131"
+                            "format": "date",
+                            "description": "Format YYYYMMDD"
                         }
                     },
                     {
@@ -207,32 +967,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "stationID": {
-                                            "type": "string"
-                                        },
-                                        "nPasses": {
-                                            "type": "integer"
-                                        },
-                                        "passList": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "passID": {
-                                                        "type": "string"
-                                                    },
-                                                    "timestamp": {
-                                                        "type": "string"
-                                                    },
-                                                    "tagID": {
-                                                        "type": "string"
-                                                    },
-                                                    "passCharge": {
-                                                        "type": "number"
-                                                    }
-                                                }
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "otherOpID": {
+                                                "type": "string"
+                                            },
+                                            "paid": {
+                                                "type": "number"
+                                            },
+                                            "received": {
+                                                "type": "number"
                                             }
                                         }
                                     }
@@ -240,14 +986,114 @@
                             },
                             "text/csv": {
                                 "schema": {
-                                    "type": "string",
-                                    "example": "passID,timestamp,tagID,passCharge\\n1234,2024-01-01 10:00,NAOP123,2.50"
+                                    "type": "string"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid toll station ID or date format"
+                        "description": "Bad request - Invalid operator ID or date format"
+                    }
+                }
+            }
+        },
+        "/tollStats/{operator}/{periodType}/{year}/{periodValue}": {
+            "get": {
+                "summary": "Retrieve toll statistics for an operator",
+                "description": "Returns toll statistics for a given operator, period type, year, and period value.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "operator",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "periodType",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "monthly",
+                                "yearly"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "year",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "periodValue",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "operator": {
+                                            "type": "string"
+                                        },
+                                        "opid": {
+                                            "type": "string"
+                                        },
+                                        "periodType": {
+                                            "type": "string"
+                                        },
+                                        "period": {
+                                            "type": "string"
+                                        },
+                                        "nPasses": {
+                                            "type": "number"
+                                        },
+                                        "totalCharges": {
+                                            "type": "number"
+                                        },
+                                        "tolls": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "nPasses": {
+                                                        "type": "number"
+                                                    },
+                                                    "totalCharges": {
+                                                        "type": "number"
+                                                    },
+                                                    "tollID": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid parameters"
                     }
                 }
             }
@@ -258,13 +1104,9 @@
             "BearerAuth": {
                 "type": "http",
                 "scheme": "bearer",
-                "bearerFormat": "JWT"
+                "bearerFormat": "JWT",
+                "description": "Provide the token in the 'Authorization' header with the 'Bearer' scheme."
             }
         }
-    },
-    "security": [
-        {
-            "BearerAuth": []
-        }
-    ]
+    }
 }
