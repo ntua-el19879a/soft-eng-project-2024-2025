@@ -3,7 +3,7 @@ se2403 login --username admin --passw freepasses4all
 se2403 healthcheck
 se2403 resetpasses
 se2403 healthcheck
-se2403 resetstations
+se2403 resetstations --file ../back-end/uploads/tollstations2024.csv
 se2403 healthcheck
 se2403 admin --addpasses --source ./passes03.csv
 se2403 healthcheck
