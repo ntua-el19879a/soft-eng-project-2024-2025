@@ -29,6 +29,9 @@ function OperatorHomepage() {
           </li>
         </ul>
       </nav>
+      <div className="logout-container">
+        <LogoutButton />
+      </div>
 
       <Routes>
         <Route path="/operatorstatistics" element={<OperatorStatistics />} />
@@ -36,6 +39,7 @@ function OperatorHomepage() {
         <Route path="/operatormonthly" element={<OperatorMonthly />} />
       </Routes>
     </div>
+
 
   );
 }
