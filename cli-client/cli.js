@@ -197,11 +197,11 @@ program
       console.log("Login response:", result);
 
       if (response.ok) {
-        if (!result.accessToken) {
+        if (!result.token) {
           console.error("Error: login success but no accessToken.");
           process.exit(1);
         }
-        saveToken(result.accessToken);  // Save token locally
+        saveToken(result.token);  // Save token locally
         console.log(`Logged in as ${options.username}`);
       } else {
         console.error(`Login failed: ${result.error}`);
@@ -223,10 +223,10 @@ program
 // ------------------------
 // ADMIN COMMANDS SCOPE
 // ------------------------
-const admin = program.command('admin').description('Admin commands');
+const admin = program.description('Admin commands');
 
 // Admin: healthcheck
-admin
+program
   .command('healthcheck')
   .description('Check the health of the API')
   .action(async () => {
@@ -234,7 +234,7 @@ admin
   });
 
 // Admin: resetstations
-admin
+program
   .command('resetstations')
   .description('Reset toll station data with a CSV file')
   .requiredOption('--file <file>', 'Path to the CSV file with station data')
@@ -260,7 +260,7 @@ admin
   });
 
 // Admin: resetpasses
-admin
+program
   .command('resetpasses')
   .description('Reset all pass data')
   .option('--dry-run', 'Preview the action without executing it')
@@ -279,11 +279,63 @@ admin
     await makeRequest('post', '/admin/resetpasses');
   });
 
-// Admin: addpasses
-admin
-  .command('addpasses')
+program
+  .command('admin')
+  .description('Run admin functions')
+  // Separate options for addpasses and source
+  .option('--addpasses', 'Add pass data from a CSV file')
+  .option('--source <file>', 'Path to the CSV file with pass data')
+
+  // usermod + user/passw/role
+  .option('--usermod', 'Modify a user password or create a new user if not found')
+  .option('--username <username>', 'Username for usermod')
+  .option('--passw <passw>', 'New password for usermod')
+  .option('--role <role>', 'User role (operator or minister, default: operator)', 'operator')
+
+  .action(async (options) => {
+    // If --addpasses is used
+    if (options.addpasses) {
+      if (!options.source) {
+        console.error('Error: --source <file> is required for --addpasses');
+        process.exit(1);
+      }
+      try {
+        await handleFileUpload('/admin/addpasses', options.source);
+        console.log('Passes added successfully.');
+      } catch (error) {
+        console.error('Failed to add passes:', error.message);
+        process.exit(1);
+      }
+    }
+
+    // If --usermod is used
+    if (options.usermod) {
+      if (!options.username || !options.passw) {
+        console.error('Error: --username and --passw are required for --usermod.');
+        process.exit(1);
+      }
+      const endpoint = `/admin/usermod/${options.username}/${options.passw}/${options.role}`;
+      try {
+        await makeRequest('post', endpoint);
+        console.log('User modified successfully.');
+      } catch (error) {
+        console.error('Failed to modify user:', error.message);
+        process.exit(1);
+      }
+    }
+
+    // If no recognized option is provided
+    if (!options.addpasses && !options.usermod) {
+      console.log('No valid admin option provided. Use --help for available options.');
+    }
+  });
+
+/* // Admin: addpasses
+program
+  .command('admin')
+  .option('--addpasses')
   .description('Add pass data from a CSV file')
-  .requiredOption('--file <file>', 'Path to the CSV file with pass data')
+  .requiredOption('--source <file>', 'Path to the CSV file with pass data')
   .action(async (options) => {
     try {
       await handleFileUpload('/admin/addpasses', options.file);
@@ -294,8 +346,9 @@ admin
   });
 
 // Admin: usermod (Modify or Create User)
-admin
-  .command('usermod')
+program
+  .command('admin')
+  .option('--usermod')
   .description('Modify a user password or create a new user if not found')
   .requiredOption('--username <username>', 'Username of the user')
   .requiredOption('--passw <passw>', 'New password for the user')
@@ -304,7 +357,7 @@ admin
     const endpoint = `/admin/usermod/${options.username}/${options.passw}/${options.role}`;
     await makeRequest('post', endpoint);
   });
-
+ */
 // Admin: users (List all users)
 admin
   .command('users')
