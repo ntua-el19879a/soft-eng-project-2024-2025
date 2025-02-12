@@ -197,11 +197,11 @@ program
       console.log("Login response:", result);
 
       if (response.ok) {
-        if (!result.accessToken) {
+        if (!result.token) {
           console.error("Error: login success but no accessToken.");
           process.exit(1);
         }
-        saveToken(result.accessToken);  // Save token locally
+        saveToken(result.token);  // Save token locally
         console.log(`Logged in as ${options.username}`);
       } else {
         console.error(`Login failed: ${result.error}`);
@@ -226,7 +226,8 @@ program
 const admin = program.command('admin').description('Admin commands');
 
 // Admin: healthcheck
-admin
+
+program
   .command('healthcheck')
   .description('Check the health of the API')
   .action(async () => {
@@ -234,7 +235,7 @@ admin
   });
 
 // Admin: resetstations
-admin
+program
   .command('resetstations')
   .description('Reset toll station data with a CSV file')
   .requiredOption('--file <file>', 'Path to the CSV file with station data')
@@ -260,7 +261,7 @@ admin
   });
 
 // Admin: resetpasses
-admin
+program
   .command('resetpasses')
   .description('Reset all pass data')
   .option('--dry-run', 'Preview the action without executing it')
