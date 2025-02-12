@@ -11,42 +11,59 @@
 .form-group {
   display: flex;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
-/* Fixed width for labels to align input fields */
-.form-group {
-  font-weight: bold;
+
+.form-group label {
+  width: 90px;          /* Fixed width for labels */
+  display: inline-block; /* Ensure the width is respected */
+  text-align: right;     /* Align the label text to the right */
   margin-right: 10px;
+  font-weight: bold;
 }
-/* Apply the same style to both text and password inputs */
-input[type="text"],
-input[type="password"],
-.input-fixed {
-  width: 250px !important;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+
+.form-group input[type="text"]{
+  width: 250px;
   font-family: Arial, sans-serif;
   font-size: 1rem;
   letter-spacing: normal;
+  padding: 1px 12px;
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 35px;
+  margin-left: -1px;
 }
-
-input[type="password"] {
+.form-group input[type="password"]{
+  width: 250px;
   font-family: Arial, sans-serif;
   font-size: 1rem;
   letter-spacing: normal;
+  padding: 1px 12px;
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 35px;
+  margin-left: -1px;
 }
 
-/* Input field styling */
-.form-row input[type="text"],
-.form-row input[type="password"] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+
+/* Hide Edge/IE show-password icons */
+input[type=password]::-ms-reveal,
+input[type=password]::-ms-clear {
+  display: none !important;
 }
+
+
+input[type=text]::-ms-reveal,
+input[type=text]::-ms-clear {
+}
+
+
+/* Attempt to hide Safari show-password icon */
+input[type=password]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
 
 /* Center the submit button */
 .button-group {

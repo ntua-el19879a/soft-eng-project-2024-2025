@@ -29,16 +29,17 @@ function OperatorHomepage() {
           </li>
         </ul>
       </nav>
+      <div className="logout-container">
+        <LogoutButton />
+      </div>
 
       <Routes>
         <Route path="/operatorstatistics" element={<OperatorStatistics />} />
         <Route path="/operatorfinancials" element={<OperatorFinancials />} />
         <Route path="/operatormonthly" element={<OperatorMonthly />} />
       </Routes>
-      <div className="logout-container">
-        <LogoutButton />
-      </div>
     </div>
+
 
   );
 }

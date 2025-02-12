@@ -48,6 +48,7 @@ function UserManagement() {
         const token = sessionStorage.getItem("token");
 
         try {
+            console.log(deleteUsername);
             const response = await axios.post(`/api/admin/userdel/${deleteUsername}`, {}, {
                 headers: {
                     'Authorization': `Bearer ${token}`

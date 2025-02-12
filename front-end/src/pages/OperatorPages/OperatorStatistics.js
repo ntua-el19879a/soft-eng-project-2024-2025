@@ -159,7 +159,7 @@ function OperatorStatistics() {
               cy="50%"
               labelLine={true}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(2)}%`}
-              outerRadius={180}
+              outerRadius={160}
               fill="#8884d8"
               dataKey="value"
             >
