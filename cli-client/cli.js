@@ -226,10 +226,6 @@ program
 const admin = program.description('Admin commands');
 
 // Admin: healthcheck
-<<<<<<< HEAD
-=======
-
->>>>>>> 816ae19f159a473e34ac1306c3a09fdbf508dadd
 program
   .command('healthcheck')
   .description('Check the health of the API')
